@@ -1,0 +1,6 @@
+dist/assets
+dist/chunks
+src
+typings
+webpack
+tsconfig.json
