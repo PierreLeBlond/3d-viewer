@@ -1,6 +1,5 @@
 dist/assets
 dist/chunks
-src
-typings
+tools
 webpack
 tsconfig.json
