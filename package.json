@@ -1,6 +1,6 @@
 {
   "name": "@s0rt/3d-viewer",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0",
   "description": "Personal three.js based gltf viewer",
   "publishConfig": {
     "access": "public"
@@ -8,9 +8,8 @@
   "engines": {
     "node": ">=14.17.0"
   },
-  "type": "module",
-  "main": "dist/index.js",
   "type": "dist/index.d.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "NODE_ENV=production webpack --config ./webpack/config.js",
     "start": "NODE_ENV=development webpack serve --config ./webpack/config.js",
