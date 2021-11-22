@@ -8,6 +8,9 @@ import Material from './materials/Material/Material';
 export default async function loadAsset(renderer: WebGLRenderer, scene: Scene, url: string) {
   const gltfLoader = new GLTFLoader();
 
+  const baseUrl = url.match(/(?<base>.+\/)(?:\w|\.)+/).groups.base;
+  gltfLoader.resourcePath = baseUrl;
+
   const asset = await gltfLoader.loadAsync(url);
   asset.scene.name = "main";
   scene.add(asset.scene);
