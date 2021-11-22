@@ -15,7 +15,10 @@ module.exports = {
       "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization"
     },
     // Externally reachable
-    host : "0.0.0.0"
+    host : "0.0.0.0",
+    devMiddleware: {
+      writeToDisk: true
+    }
   },
 
   publicPath: 'http://localhost:8080/'
