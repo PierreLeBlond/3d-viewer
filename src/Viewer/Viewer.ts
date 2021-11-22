@@ -12,9 +12,9 @@ import playAllAnimations from "./playAllAnimations";
 
 export default class Viewer extends EventDispatcher {
   public scene: Scene;
+  public camera: PerspectiveCamera;
 
   private renderer: WebGLRenderer;
-  private camera: PerspectiveCamera;
   private controls: OrbitControls;
 
   private clock: Clock;
