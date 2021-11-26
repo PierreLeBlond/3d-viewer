@@ -119,7 +119,7 @@ export default class Material extends ShaderMaterial {
     this.uniforms.reflectorViewMatrix.value = reflectorViewMatrix;
   }
 
-  public isMeshStandardMaterial: boolean;
+  public isMeshPhysicalMaterial: boolean;
 
   public constructor() {
     const uniforms: {[n: string]: { value: any }} = mergeUniforms([
@@ -129,6 +129,7 @@ export default class Material extends ShaderMaterial {
       UniformsLib.metalnessmap,
       UniformsLib.normalmap,
       UniformsLib.aomap,
+      UniformsLib.lights,
       {
         envMapIntensity: { value: 1 },
         roughness: { value: 1.0 },
@@ -142,10 +143,14 @@ export default class Material extends ShaderMaterial {
     ]);
 
     super({
+      name: 'material',
       uniforms,
       vertexShader,
-      fragmentShader
+      fragmentShader,
+      lights: true
     });
+
+    this.isMeshPhysicalMaterial = true;
 
     this.normalMapType = TangentSpaceNormalMap;
   }

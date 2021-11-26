@@ -84,6 +84,7 @@ void main() {
 #include <lights_physical_fragment>
 #include <lights_fragment_begin>
 #include <lights_fragment_maps>
+#include <lights_fragment_end>
 
 #if defined(REFLECTOR)
   vec4 positionClip = projectionMatrix*reflectorViewMatrix*vPositionW;
@@ -94,12 +95,6 @@ void main() {
   float orientationFactor = step(0.0, dot(reflectorNormal.xyz, normal));
 
   float reflectorDepth = texture2D(reflectorDepthMap, uv).x;
-
-  // vec4 positionV = inverse(reflectorProjectionMatrix)*vec4(positionNDC.xy, reflectorDepth*2.0 - 1.0, 1.0);
-  // vec4 positionW = inverse(reflectorViewMatrix)*positionV;
-  // positionW.xyz /= positionW.w;
-
-  // float dist = length(vPositionW.xyz - positionW.xyz);
 
   vec4 reflectorTexel = texture2D(reflectorMap, uv);
 
