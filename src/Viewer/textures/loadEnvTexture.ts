@@ -1,8 +1,7 @@
-import { Texture } from "three/src/textures/Texture";
-import { PMREMGenerator } from "three/src/extras/PMREMGenerator";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader";
+import { PMREMGenerator } from "three/src/extras/PMREMGenerator";
 import { WebGLRenderer } from "three/src/renderers/WebGLRenderer";
+import { Texture } from "three/src/textures/Texture";
 
 export default async function loadEnvTexture(renderer: WebGLRenderer, path: string): Promise<Texture> {
   const exrLoader = new EXRLoader();

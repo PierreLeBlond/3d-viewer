@@ -30,6 +30,14 @@ export default class PublicViewer {
     this.viewer.launch();
   }
 
+  public async loadDefaultEnvironment() {
+    if (!this.viewer) {
+      throw new Error("App must be initialized first by calling app.init");
+    }
+
+    await this.viewer.loadDefaultEnvironment();
+  }
+
   public playAllAnimations() {
     if (!this.viewer) {
       throw new Error("App must be initialized first by calling app.init");

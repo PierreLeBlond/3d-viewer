@@ -8,6 +8,7 @@ import { Scene } from "three/src/scenes/Scene";
 import init from "./init";
 import loadAsset from "./loadAsset";
 import playAllAnimations from "./playAllAnimations";
+import loadDefaultEnvironment from './textures/loadDefaultEnvironment';
 
 
 export default class Viewer extends EventDispatcher {
@@ -15,7 +16,6 @@ export default class Viewer extends EventDispatcher {
   public camera: PerspectiveCamera;
   public renderer: WebGLRenderer;
   public controls: OrbitControls;
-  private controls: OrbitControls;
 
   private clock: Clock;
 
@@ -51,6 +51,10 @@ export default class Viewer extends EventDispatcher {
     window.addEventListener('resize', () => this.resize(), false)
 
     this.update();
+  }
+
+  public async loadDefaultEnvironment() {
+    loadDefaultEnvironment(this.scene, this.renderer);
   }
 
   public playAllAnimations() {
