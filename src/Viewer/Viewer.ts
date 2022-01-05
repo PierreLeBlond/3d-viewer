@@ -50,6 +50,7 @@ export default class Viewer extends EventDispatcher {
 
     window.addEventListener('resize', () => this.resize(), false)
 
+    this.resize();
     this.update();
   }
 
