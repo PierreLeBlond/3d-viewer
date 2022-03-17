@@ -1,5 +1,6 @@
 const path = require('path');
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin =
+// require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const config = require(`./${process.env.NODE_ENV}.config`);
 
@@ -10,28 +11,16 @@ module.exports = {
 
   module: {
     rules: [
-      {
-        test: /\.(ts)$/,
-        use: 'ts-loader',
-        exclude: /node_modules/
-      },
-      {
-        test: /\.(exr)$/i,
-        type: 'asset/resource'
-      },
-      {
-        test: /\.glsl$/,
-        loader: 'webpack-glsl-loader'
-      }
+      {test: /\.(ts)$/, use: 'ts-loader', exclude: /node_modules/},
+      {test: /\.(exr)$/i, type: 'asset/resource'},
+      {test: /\.glsl$/, loader: 'webpack-glsl-loader'}
     ],
   },
 
-  resolve: {
-    extensions: ['*', '.ts', '.js']
-  },
+  resolve: {extensions: ['*', '.ts', '.js']},
 
   // plugins: [
-    // new BundleAnalyzerPlugin()
+  // new BundleAnalyzerPlugin()
   // ],
 
   experiments: {
@@ -39,14 +28,12 @@ module.exports = {
   },
 
   output: {
-    library: {
-      type: 'module'
-    },
+    library: {type: 'module'},
     path: path.resolve(__dirname, '../dist'),
     publicPath: config.publicPath,
     filename: 'index.js',
     assetModuleFilename: `assets/${config.mediaFilename}`,
-    chunkFilename : `chunks/${config.chunkFilename}`,
+    chunkFilename: `chunks/${config.chunkFilename}`,
     clean: true
   },
 

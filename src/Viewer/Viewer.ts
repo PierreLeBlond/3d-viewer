@@ -1,14 +1,10 @@
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { AnimationMixer } from "three/src/animation/AnimationMixer";
-import { PerspectiveCamera } from "three/src/cameras/PerspectiveCamera";
-import { Clock } from 'three/src/core/Clock';
-import { EventDispatcher } from "three/src/core/EventDispatcher";
-import { WebGLRenderer } from "three/src/renderers/WebGLRenderer";
-import { Scene } from "three/src/scenes/Scene";
-import init from "./init";
-import loadAsset from "./loadAsset";
-import playAllAnimations from "./playAllAnimations";
+import {AnimationMixer, Clock, EventDispatcher, PerspectiveCamera, Scene, WebGLRenderer} from 'three';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import init from './init';
+import loadAsset from './loadAsset';
+import playAllAnimations from './playAllAnimations';
 import loadDefaultEnvironment from './textures/loadDefaultEnvironment';
+
 
 
 export default class Viewer extends EventDispatcher {
@@ -28,10 +24,10 @@ export default class Viewer extends EventDispatcher {
 
   public async init(elementId: string) {
     if (!elementId) {
-      throw new Error("init: element id required");
+      throw new Error('init: element id required');
     }
 
-    const { renderer, scene, camera, controls } = await init(elementId);
+    const {renderer, scene, camera, controls} = await init(elementId);
 
     this.renderer = renderer;
     this.scene = scene;
@@ -44,13 +40,14 @@ export default class Viewer extends EventDispatcher {
   }
 
   public launch() {
-    this.addEventListener("updated", () => {
+    this.addEventListener('updated', () => {
       requestAnimationFrame(() => this.update());
     });
 
-    window.addEventListener('resize', () => this.resize(), false)
+    window
+        .addEventListener('resize', () => this.resize(), false)
 
-    this.resize();
+            this.resize();
     this.update();
   }
 
@@ -67,7 +64,7 @@ export default class Viewer extends EventDispatcher {
   }
 
   private resize() {
-    const { clientWidth, clientHeight } = this.renderer.domElement.parentElement;
+    const {clientWidth, clientHeight} = this.renderer.domElement.parentElement;
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight);
@@ -84,14 +81,18 @@ export default class Viewer extends EventDispatcher {
 
     // 2. Update animations
     const delta = this.clock.getDelta();
-    this.scene.dispatchEvent({ type: "animate", delta });
+    this.scene.dispatchEvent({type: 'animate', delta});
 
     // 3. Update preprocesses
-    this.dispatchEvent({ type: "updatePreprocesses", camera: this.camera, renderer: this.renderer });
+    this.dispatchEvent({
+      type: 'updatePreprocesses',
+      camera: this.camera,
+      renderer: this.renderer
+    });
 
     // 4. Update screen
     this.render();
 
-    this.dispatchEvent({ type: "updated" });
+    this.dispatchEvent({type: 'updated'});
   }
 }

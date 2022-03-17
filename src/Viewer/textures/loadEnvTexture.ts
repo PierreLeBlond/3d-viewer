@@ -1,11 +1,11 @@
-import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader";
-import { PMREMGenerator } from "three/src/extras/PMREMGenerator";
-import { WebGLRenderer } from "three/src/renderers/WebGLRenderer";
-import { Texture } from "three/src/textures/Texture";
+import {PMREMGenerator, WebGLRenderer} from 'three';
+import {EXRLoader} from 'three/examples/jsm/loaders/EXRLoader';
+import {Texture} from 'three/src/textures/Texture';
 
-export default async function loadEnvTexture(renderer: WebGLRenderer, path: string): Promise<Texture> {
+export default async function loadEnvTexture(
+    renderer: WebGLRenderer, path: string): Promise<Texture> {
   const exrLoader = new EXRLoader();
-  exrLoader.crossOrigin = "anonymous";
+  exrLoader.crossOrigin = 'anonymous';
   const texture = await exrLoader.loadAsync(path);
   const pmremGenerator = new PMREMGenerator(renderer);
   pmremGenerator.compileEquirectangularShader();

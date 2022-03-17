@@ -1,17 +1,8 @@
-import { TangentSpaceNormalMap } from "three/src/constants";
-import { MeshPhysicalMaterial } from "three/src/materials/MeshPhysicalMaterial";
-import { ShaderMaterial } from "three/src/materials/ShaderMaterial";
-import { Color } from "three/src/math/Color";
-import { Matrix3 } from "three/src/math/Matrix3";
-import { Matrix4 } from "three/src/math/Matrix4";
-import { UniformsLib } from "three/src/renderers/shaders/UniformsLib";
-import { mergeUniforms } from "three/src/renderers/shaders/UniformsUtils";
-import { Texture } from "three/src/textures/Texture";
-import fragmentShader from "../shaders/material/material.fragment.glsl";
-import vertexShader from "../shaders/material/material.vertex.glsl";
+import {Color, Matrix4, MeshPhysicalMaterial, ShaderMaterial, TangentSpaceNormalMap, Texture, UniformsLib, UniformsUtils} from 'three';
+import fragmentShader from '../shaders/material/material.fragment.glsl';
+import vertexShader from '../shaders/material/material.vertex.glsl';
 
 export default class Material extends ShaderMaterial {
-
   public get color(): Color {
     return this.uniforms.diffuse.value;
   };
@@ -122,23 +113,18 @@ export default class Material extends ShaderMaterial {
   public isMeshPhysicalMaterial: boolean;
 
   public constructor() {
-    const uniforms: {[n: string]: { value: any }} = mergeUniforms([
-      UniformsLib.common,
-      UniformsLib.envmap,
-      UniformsLib.roughnessmap,
-      UniformsLib.metalnessmap,
-      UniformsLib.normalmap,
-      UniformsLib.aomap,
-      UniformsLib.lights,
-      {
-        envMapIntensity: { value: 1 },
-        roughness: { value: 1.0 },
-        metalness: { value: 1.0 },
-        reflectorMap: { value: null },
-        reflectorDepthMap: { value: null },
-        reflectorMatrix: { value: new Matrix4() },
-        reflectorProjectionMatrix: { value: new Matrix4() },
-        reflectorViewMatrix: { value: new Matrix4() }
+    const uniforms: {[n: string]: {value: any}} = UniformsUtils.merge([
+      UniformsLib.common, UniformsLib.envmap, UniformsLib.roughnessmap,
+      UniformsLib.metalnessmap, UniformsLib.normalmap, UniformsLib.aomap,
+      UniformsLib.lights, {
+        envMapIntensity: {value: 1},
+        roughness: {value: 1.0},
+        metalness: {value: 1.0},
+        reflectorMap: {value: null},
+        reflectorDepthMap: {value: null},
+        reflectorMatrix: {value: new Matrix4()},
+        reflectorProjectionMatrix: {value: new Matrix4()},
+        reflectorViewMatrix: {value: new Matrix4()}
       }
     ]);
 
@@ -157,14 +143,14 @@ export default class Material extends ShaderMaterial {
 
   public onBeforeCompile() {
     if (!!this.reflectorMap) {
-      this.defines.REFLECTOR = "";
+      this.defines.REFLECTOR = '';
     } else {
       delete this.defines.REFLECTOR;
     }
   }
 
   public customProgramCacheKey(): string {
-    return !!this.reflectorMap ? "reflector" : "";
+    return !!this.reflectorMap ? 'reflector' : '';
   }
 
   public vampMeshPhysicalMaterial(material: MeshPhysicalMaterial) {
@@ -179,5 +165,4 @@ export default class Material extends ShaderMaterial {
     this.aoMap = material.aoMap;
     this.aoMapIntensity = material.aoMapIntensity;
   }
-
 }

@@ -1,11 +1,7 @@
-import { WebGLRenderer } from "three/src/renderers/WebGLRenderer";
-import { Color } from "three/src/math/Color";
-import { ACESFilmicToneMapping, sRGBEncoding } from "three/src/constants";
+import {ACESFilmicToneMapping, Color, sRGBEncoding, WebGLRenderer} from 'three';
 
 export default function initRenderer(elementId: string): WebGLRenderer {
-  const renderer = new WebGLRenderer({
-    antialias: true
-  });
+  const renderer = new WebGLRenderer({antialias: true});
 
   const element = document.getElementById(elementId);
 
@@ -13,7 +9,6 @@ export default function initRenderer(elementId: string): WebGLRenderer {
   renderer.setClearColor(new Color(255, 255, 255));
 
   renderer.outputEncoding = sRGBEncoding;
-  renderer.gammaFactor = 2.2;
   renderer.toneMapping = ACESFilmicToneMapping;
 
   // turn on the physically correct lighting model
