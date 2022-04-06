@@ -22,12 +22,12 @@ export default class Viewer extends EventDispatcher {
     this.clock = new Clock();
   }
 
-  public async init(elementId: string) {
+  public init(elementId: string) {
     if (!elementId) {
       throw new Error('init: element id required');
     }
 
-    const {renderer, scene, camera, controls} = await init(elementId);
+    const {renderer, scene, camera, controls} = init(elementId);
 
     this.renderer = renderer;
     this.scene = scene;
@@ -52,7 +52,7 @@ export default class Viewer extends EventDispatcher {
   }
 
   public async loadDefaultEnvironment() {
-    loadDefaultEnvironment(this.scene, this.renderer);
+    await loadDefaultEnvironment(this.scene, this.renderer);
   }
 
   public playAllAnimations() {

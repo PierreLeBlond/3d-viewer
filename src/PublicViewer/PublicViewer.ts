@@ -1,56 +1,37 @@
-import {AnimationMixer} from 'three';
+import {AnimationMixer, EventDispatcher} from 'three';
+import launchTasks from '../Viewer/launchTasks';
+import {Tasks} from '../Viewer/Tasks';
 import Viewer from '../Viewer/Viewer';
 
-export default class PublicViewer {
-  public viewer: Viewer;
+export default class PublicViewer extends EventDispatcher {
+  private tasks: Tasks = {parallelTasks: []};
+  public viewer: Viewer = new Viewer();
 
-  public async init(elementId: string) {
-    if (this.viewer) {
-      throw new Error('App is already initialized');
-    }
-
-    this.viewer = new Viewer();
-
-    await this.viewer.init(elementId);
+  public addTasks(tasks: Tasks) {
+    this.tasks.parallelTasks.push(tasks);
   }
 
-  public async loadAsset(url: string) {
-    if (!this.viewer) {
-      throw new Error('App must be initialized first by calling app.init');
-    }
+  public async launch(elementId: string) {
+    this.viewer.init(elementId);
 
-    await this.viewer.loadAsset(url);
-  }
-
-  public launch() {
-    if (!this.viewer) {
-      throw new Error('App must be initialized first by calling app.init');
-    }
+    await launchTasks(this, this.tasks);
 
     this.viewer.launch();
   }
 
-  public async loadDefaultEnvironment() {
-    if (!this.viewer) {
-      throw new Error('App must be initialized first by calling app.init');
-    }
+  public async loadAsset(url: string) {
+    await this.viewer.loadAsset(url);
+  }
 
+  public async loadDefaultEnvironment() {
     await this.viewer.loadDefaultEnvironment();
   }
 
   public playAllAnimations() {
-    if (!this.viewer) {
-      throw new Error('App must be initialized first by calling app.init');
-    }
-
     this.viewer.playAllAnimations();
   }
 
   public getAllAnimations(): AnimationMixer[] {
-    if (!this.viewer) {
-      throw new Error('App must be initialized first by calling app.init');
-    }
-
     return this.viewer.getAllAnimations();
   }
 }

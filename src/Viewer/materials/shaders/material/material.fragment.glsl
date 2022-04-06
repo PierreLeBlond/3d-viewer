@@ -104,7 +104,6 @@ void main() {
   radiance = mix(radiance, reflectorTexel.xyz, orientationFactor*(1.0 - step(1.0, reflectorDepth)));
 #endif
 
-#include <lights_fragment_end>
   // modulation
 #include <aomap_fragment>
   vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
