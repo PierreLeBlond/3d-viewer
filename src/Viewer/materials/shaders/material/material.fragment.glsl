@@ -84,7 +84,6 @@ void main() {
 #include <lights_physical_fragment>
 #include <lights_fragment_begin>
 #include <lights_fragment_maps>
-#include <lights_fragment_end>
 
 #if defined(REFLECTOR)
   vec4 positionClip = projectionMatrix*reflectorViewMatrix*vPositionW;
@@ -103,6 +102,8 @@ void main() {
 
   radiance = mix(radiance, reflectorTexel.xyz, orientationFactor*(1.0 - step(1.0, reflectorDepth)));
 #endif
+
+#include <lights_fragment_end>
 
   // modulation
 #include <aomap_fragment>
