@@ -2,7 +2,7 @@ import {PMREMGenerator, WebGLRenderer} from 'three';
 import {EXRLoader} from 'three/examples/jsm/loaders/EXRLoader';
 import {Texture} from 'three/src/textures/Texture';
 
-export default async function loadEnvTexture(
+export default async function loadExrTexture(
     renderer: WebGLRenderer, path: string): Promise<Texture> {
   const exrLoader = new EXRLoader();
   exrLoader.crossOrigin = 'anonymous';

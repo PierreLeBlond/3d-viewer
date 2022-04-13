@@ -1,9 +1,14 @@
-import {AnimationMixer, Clock, EventDispatcher, PerspectiveCamera, Scene, WebGLRenderer} from 'three';
+import {AnimationMixer, Clock, EventDispatcher, PerspectiveCamera, Scene, Texture, WebGLRenderer} from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import init from './init';
 import loadAsset from './loadAsset';
+import loadEnvironment from './loadEnvironment';
+import createMaterial from './materials/Material/createMaterial';
+import Material from './materials/Material/Material';
 import playAllAnimations from './playAllAnimations';
 import loadDefaultEnvironment from './textures/loadDefaultEnvironment';
+import loadHdrTexture from './textures/loadHdrTexture';
+import setViewSpaceEnvironment from './textures/setViewSpaceEnvironment';
 
 
 
@@ -37,6 +42,18 @@ export default class Viewer extends EventDispatcher {
 
   public async loadAsset(url: string) {
     await loadAsset(this.renderer, this.scene, url);
+  }
+
+  public async loadEnvironment(url: string): Promise<void> {
+    await loadEnvironment(this.renderer, this.scene, url);
+  }
+
+  public setViewSpaceEnvironment(value: boolean) {
+    setViewSpaceEnvironment(this.scene, value);
+  }
+
+  public createMaterial(): Material {
+    return createMaterial(this.scene);
   }
 
   public launch() {

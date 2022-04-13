@@ -19,7 +19,36 @@ varying vec3 vViewPosition;
 #include <bsdfs>
 #include <cube_uv_reflection_fragment>
 #include <envmap_common_pars_fragment>
-#include <envmap_physical_pars_fragment>
+
+#if defined(USE_ENVMAP)
+vec3 getIBLIrradiance(const in vec3 normal) {
+#if defined(ENVMAP_TYPE_CUBE_UV)
+  vec3 direction = normal;
+#if defined(ENVMAP_COORDINATE_WORLD)
+  direction = inverseTransformDirection(direction, viewMatrix);
+#endif
+  vec4 envMapColor = textureCubeUV(envMap, direction, 1.0);
+  return PI * envMapColor.rgb * envMapIntensity;
+#else
+  return vec3(0.0);
+#endif
+}
+vec3 getIBLRadiance(const in vec3 viewDir, const in vec3 normal, const in float roughness) {
+#if defined(ENVMAP_TYPE_CUBE_UV)
+  vec3 reflectVec = reflect(-viewDir, normal);
+  // Mixing the reflection with the normal is more accurate and keeps rough objects from gathering light from behind their tangent plane.
+  reflectVec = normalize(mix(reflectVec, normal, roughness * roughness));
+#if defined(ENVMAP_COORDINATE_WORLD)
+  reflectVec = inverseTransformDirection(reflectVec, viewMatrix);
+#endif
+  vec4 envMapColor = textureCubeUV(envMap, reflectVec, roughness);
+  return envMapColor.rgb * envMapIntensity;
+#else
+  return vec3(0.0);
+#endif
+}
+#endif
+
 #include <lights_pars_begin>
 #include <normal_pars_fragment>
 #include <lights_physical_pars_fragment>

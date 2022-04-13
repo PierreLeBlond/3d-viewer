@@ -60,11 +60,11 @@ export default async function launchTasks(
   const monitoredTask = getMonitoredTasks(eventDispatcher, tasks);
   let numberOfCompletedTasks = 0;
   eventDispatcher.addEventListener('taskCompleted', () => {
+    numberOfCompletedTasks++;
     publicViewer.dispatchEvent({
       type: 'taskCompleted',
       progression: numberOfCompletedTasks / monitoredTask.numberOfTasks
     });
-    numberOfCompletedTasks++;
   });
   await monitoredTask.monitoredTask();
 }

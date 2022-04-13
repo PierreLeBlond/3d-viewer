@@ -112,7 +112,7 @@ export default class Material extends ShaderMaterial {
 
   public isMeshPhysicalMaterial: boolean;
 
-  public constructor() {
+  private constructor() {
     const uniforms: {[n: string]: {value: any}} = UniformsUtils.merge([
       UniformsLib.common, UniformsLib.envmap, UniformsLib.roughnessmap,
       UniformsLib.metalnessmap, UniformsLib.normalmap, UniformsLib.aomap,
@@ -141,16 +141,30 @@ export default class Material extends ShaderMaterial {
     this.normalMapType = TangentSpaceNormalMap;
   }
 
+  public static create() {
+    const material = new Material();
+    return material;
+  }
+
   public onBeforeCompile() {
     if (!!this.reflectorMap) {
       this.defines.REFLECTOR = '';
     } else {
       delete this.defines.REFLECTOR;
     }
+
+    if (this.envMap?.userData.viewSpace) {
+      delete this.defines.ENVMAP_COORDINATE_WORLD;
+    } else {
+      this.defines.ENVMAP_COORDINATE_WORLD = '';
+    }
   }
 
   public customProgramCacheKey(): string {
-    return !!this.reflectorMap ? 'reflector' : '';
+    const reflectorCacheKey = !!this.reflectorMap ? 'reflector' : '';
+    const envMapViewSpaceCacheKey =
+        !!this.envMap?.userData.viewSpace ? 'envMapViewSpace' : '';
+    return `${reflectorCacheKey}${envMapViewSpaceCacheKey}`;
   }
 
   public vampMeshPhysicalMaterial(material: MeshPhysicalMaterial) {

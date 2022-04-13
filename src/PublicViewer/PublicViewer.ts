@@ -1,4 +1,4 @@
-import {AnimationMixer, EventDispatcher} from 'three';
+import {AnimationMixer, EventDispatcher, Texture} from 'three';
 import launchTasks from '../Viewer/launchTasks';
 import {Tasks} from '../Viewer/Tasks';
 import Viewer from '../Viewer/Viewer';
@@ -21,6 +21,14 @@ export default class PublicViewer extends EventDispatcher {
 
   public async loadAsset(url: string) {
     await this.viewer.loadAsset(url);
+  }
+
+  public async loadEnvironment(url: string): Promise<void> {
+    await this.viewer.loadEnvironment(url);
+  }
+
+  public setViewSpaceEnvironment(value: boolean) {
+    this.viewer.setViewSpaceEnvironment(value);
   }
 
   public async loadDefaultEnvironment() {

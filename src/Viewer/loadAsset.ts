@@ -1,5 +1,6 @@
 import {Mesh, MeshPhysicalMaterial, Scene, WebGLRenderer} from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
+import createMaterial from './materials/Material/createMaterial';
 import Material from './materials/Material/Material';
 
 export default async function loadAsset(
@@ -29,7 +30,7 @@ export default async function loadAsset(
     const physicalMaterial = object.material as MeshPhysicalMaterial;
 
     if (physicalMaterial) {
-      const material = new Material();
+      const material = createMaterial(scene);
       material.vampMeshPhysicalMaterial(physicalMaterial);
 
       // Set anisotropy level
@@ -41,8 +42,6 @@ export default async function loadAsset(
         material.normalMap.anisotropy =
             renderer.capabilities.getMaxAnisotropy();
       }
-
-      material.envMap = scene.environment;
 
       object.material = material;
     }
