@@ -1,14 +1,13 @@
 import {Mesh, Scene, Texture} from 'three';
 import Material from '../materials/Material/Material';
+import Ibl from './Ibl';
 
-export default function setEnvironmentToScene(
-    environment: Texture, scene: Scene) {
-  scene.environment = environment;
-  scene.environment.userData.viewSpace = scene.userData.viewSpaceEnvironment;
+export default function setIblToScene(ibl: Ibl, scene: Scene) {
+  scene.userData.ibl = ibl;
   scene.traverse((object: Mesh) => {
     const material = object.material as Material;
     if (material?.isMeshPhysicalMaterial) {
-      material.envMap = environment;
+      material.ibl = ibl;
     }
   });
 }

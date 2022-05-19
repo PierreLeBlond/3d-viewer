@@ -1,9 +1,8 @@
 #define STANDARD
 varying vec3 vViewPosition;
 
-#if defined(REFLECTOR)
-varying vec4 vPositionW;
-#endif
+varying vec4 world_position_out;
+varying vec3 world_normal_out;
 
 #include <common>
 #include <uv_pars_vertex>
@@ -35,7 +34,5 @@ void main() {
 
 #include <worldpos_vertex>
 
-#if defined(REFLECTOR)
-  vPositionW = modelMatrix*vec4(position, 1.0);
-#endif
+  world_position_out = modelMatrix*vec4(position, 1.0);
 }

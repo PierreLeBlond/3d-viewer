@@ -1,4 +1,6 @@
-import {Color, Matrix4, MeshPhysicalMaterial, ShaderMaterial, TangentSpaceNormalMap, Texture, UniformsLib, UniformsUtils} from 'three';
+import {Color, Matrix4, MeshPhysicalMaterial, Scene, ShaderMaterial, TangentSpaceNormalMap, Texture, UniformsLib, UniformsUtils} from 'three';
+import Ibl from '../../textures/Ibl';
+import IblSpace from '../../textures/IblSpace';
 import fragmentShader from '../shaders/material/material.fragment.glsl';
 import vertexShader from '../shaders/material/material.vertex.glsl';
 
@@ -78,6 +80,17 @@ export default class Material extends ShaderMaterial {
     this.uniforms.envMap.value = envMap;
   }
 
+  private internalIbl: Ibl;
+  public get ibl(): Ibl {
+    return this.internalIbl;
+  }
+  public set ibl(ibl: Ibl) {
+    this.internalIbl = ibl;
+    this.uniforms.radiance_map.value = ibl.radiance;
+    this.uniforms.irradiance_map.value = ibl.irradiance;
+    this.uniforms.brdf_map.value = ibl.brdf;
+  }
+
   public get reflectorMap(): Texture {
     return this.uniforms.reflectorMap.value;
   };
@@ -112,7 +125,9 @@ export default class Material extends ShaderMaterial {
 
   public isMeshPhysicalMaterial: boolean;
 
-  private constructor() {
+  public scene: Scene;
+
+  private constructor(scene: Scene) {
     const uniforms: {[n: string]: {value: any}} = UniformsUtils.merge([
       UniformsLib.common, UniformsLib.envmap, UniformsLib.roughnessmap,
       UniformsLib.metalnessmap, UniformsLib.normalmap, UniformsLib.aomap,
@@ -120,6 +135,9 @@ export default class Material extends ShaderMaterial {
         envMapIntensity: {value: 1},
         roughness: {value: 1.0},
         metalness: {value: 1.0},
+        radiance_map: {value: null},
+        irradiance_map: {value: null},
+        brdf_map: {value: null},
         reflectorMap: {value: null},
         reflectorDepthMap: {value: null},
         reflectorMatrix: {value: new Matrix4()},
@@ -136,13 +154,15 @@ export default class Material extends ShaderMaterial {
       lights: true
     });
 
+    this.scene = scene;
+
     this.isMeshPhysicalMaterial = true;
 
     this.normalMapType = TangentSpaceNormalMap;
   }
 
-  public static create() {
-    const material = new Material();
+  public static create(scene: Scene) {
+    const material = new Material(scene);
     return material;
   }
 
@@ -153,18 +173,18 @@ export default class Material extends ShaderMaterial {
       delete this.defines.REFLECTOR;
     }
 
-    if (this.envMap?.userData.viewSpace) {
-      delete this.defines.ENVMAP_COORDINATE_WORLD;
+    if (this.scene.userData.iblSpace == IblSpace.View) {
+      this.defines.IBL_IN_VIEW_SPACE = '';
     } else {
-      this.defines.ENVMAP_COORDINATE_WORLD = '';
+      delete this.defines.IBL_IN_VIEW_SPACE;
     }
   }
 
   public customProgramCacheKey(): string {
     const reflectorCacheKey = !!this.reflectorMap ? 'reflector' : '';
-    const envMapViewSpaceCacheKey =
-        !!this.envMap?.userData.viewSpace ? 'envMapViewSpace' : '';
-    return `${reflectorCacheKey}${envMapViewSpaceCacheKey}`;
+    const iblInViewSpaceCacheKey =
+        this.scene.userData.iblSpace == IblSpace.View ? 'iblInViewSpace' : '';
+    return `${reflectorCacheKey}${iblInViewSpaceCacheKey}`;
   }
 
   public vampMeshPhysicalMaterial(material: MeshPhysicalMaterial) {

@@ -1,6 +1,7 @@
 import {AnimationMixer, EventDispatcher, Texture} from 'three';
 import launchTasks from '../Viewer/launchTasks';
 import {Tasks} from '../Viewer/Tasks';
+import IblSpace from '../Viewer/textures/IblSpace';
 import Viewer from '../Viewer/Viewer';
 
 export default class PublicViewer extends EventDispatcher {
@@ -23,16 +24,20 @@ export default class PublicViewer extends EventDispatcher {
     await this.viewer.loadAsset(url);
   }
 
-  public async loadEnvironment(url: string): Promise<void> {
-    await this.viewer.loadEnvironment(url);
+  public async loadIbl(path: string, name: string): Promise<void> {
+    await this.viewer.loadIbl(path, name);
   }
 
-  public setViewSpaceEnvironment(value: boolean) {
-    this.viewer.setViewSpaceEnvironment(value);
+  public setIblInViewSpace() {
+    this.viewer.setIblSpace(IblSpace.View);
   }
 
-  public async loadDefaultEnvironment() {
-    await this.viewer.loadDefaultEnvironment();
+  public setIblInWorldSpace() {
+    this.viewer.setIblSpace(IblSpace.World);
+  }
+
+  public addSkybox() {
+    this.viewer.addSkybox();
   }
 
   public playAllAnimations() {

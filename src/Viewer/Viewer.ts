@@ -1,16 +1,14 @@
-import {AnimationMixer, Clock, EventDispatcher, PerspectiveCamera, Scene, Texture, WebGLRenderer} from 'three';
+import {AnimationMixer, Clock, EventDispatcher, PerspectiveCamera, Scene, WebGLRenderer} from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import addSkybox from './addSkybox';
 import init from './init';
 import loadAsset from './loadAsset';
-import loadEnvironment from './loadEnvironment';
 import createMaterial from './materials/Material/createMaterial';
 import Material from './materials/Material/Material';
 import playAllAnimations from './playAllAnimations';
-import loadDefaultEnvironment from './textures/loadDefaultEnvironment';
-import loadHdrTexture from './textures/loadHdrTexture';
-import setViewSpaceEnvironment from './textures/setViewSpaceEnvironment';
-
-
+import IblSpace from './textures/IblSpace';
+import loadIbl from './textures/loadIbl';
+import setIblSpace from './textures/setIblSpace';
 
 export default class Viewer extends EventDispatcher {
   public scene: Scene;
@@ -44,12 +42,16 @@ export default class Viewer extends EventDispatcher {
     await loadAsset(this.renderer, this.scene, url);
   }
 
-  public async loadEnvironment(url: string): Promise<void> {
-    await loadEnvironment(this.renderer, this.scene, url);
+  public async loadIbl(path: string, name: string): Promise<void> {
+    this.scene.userData.ibl = await loadIbl(path, name);
   }
 
-  public setViewSpaceEnvironment(value: boolean) {
-    setViewSpaceEnvironment(this.scene, value);
+  public setIblSpace(space: IblSpace) {
+    setIblSpace(this.scene, space);
+  }
+
+  public addSkybox() {
+    addSkybox(this.scene);
   }
 
   public createMaterial(): Material {
@@ -66,10 +68,6 @@ export default class Viewer extends EventDispatcher {
 
             this.resize();
     this.update();
-  }
-
-  public async loadDefaultEnvironment() {
-    await loadDefaultEnvironment(this.scene, this.renderer);
   }
 
   public playAllAnimations() {
