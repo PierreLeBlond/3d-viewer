@@ -1,6 +1,6 @@
 #define STANDARD
 
-const float kMaxRadianceLod = 10.0;
+const float kMaxRadianceLod = 9.0;
 
 uniform vec3 diffuse;
 uniform float roughness;
@@ -66,9 +66,8 @@ vec3 FresnelSchlickRoughness(float cos_theta, vec3 f_0, float roughness) {
   // return hdrColor;
 // }
 
-
 vec3 RGBDToHDR(vec4 rgbd) {
-  return pow(rgbd.bgr/rgbd.a, vec3(2.2));
+  return rgbd.bgr/rgbd.a;
 }
 
 vec3 toneMap(vec3 hdrColor) {
@@ -77,6 +76,11 @@ vec3 toneMap(vec3 hdrColor) {
 
 vec3 untoneMap(vec3 ldrColor) {
   return ldrColor/(vec3(1.0) - ldrColor);
+}
+
+float UnpackFrom16Bits(vec2 packed_value) {
+  const vec2 bit_shift = vec2(1.0 / 255.0, 1.0);
+  return dot(packed_value, bit_shift);
 }
 
 #if defined(REFLECTOR)
@@ -93,13 +97,60 @@ uniform mat4 reflectorMatrix;
 
 varying vec4 world_position_out;
 
-void main() {
+vec3 GetConductorMultipleScattering(float n_dot_v, float roughness, vec3 color, vec3 irradiance, vec3 radiance) {
+  vec3 f_0 = color;
 
-  vec4 diffuseColor = vec4(diffuse, opacity);
+  // Correction at low roughness for dielectrics, from Fdez-Aguera
+  vec3 k_s = FresnelSchlickRoughness(n_dot_v, f_0, roughness);
+
+  // vec2 F_ab = textureLod(brdf_map, vec2(n_dot_v, roughness), 0.0).rg;
+  vec4 packed_sample = textureLod(brdf_map, vec2(n_dot_v, roughness), 0.0);
+  vec2 F_ab = vec2(UnpackFrom16Bits(packed_sample.xy), UnpackFrom16Bits(packed_sample.zw));
+  vec3 FssEss = k_s * F_ab.x + F_ab.y;
+
+
+  // Adding multiple scattering, from Fdez-Aguera
+  float Ess = F_ab.x + F_ab.y;
+  float Ems = 1.0 - Ess;
+  vec3 Favg = f_0 + (1.0 - f_0) / 21.0;
+  vec3 Fms = FssEss * Favg / (1.0 - (1.0 - Ess) * Favg);
+
+  return FssEss * radiance + (Fms * Ems) * irradiance;
+}
+
+vec3 GetDielectricMultipleScattering(float n_dot_v, float roughness, vec3 color, vec3 irradiance, vec3 radiance) {
+  vec3 f_0 = vec3(0.04);
+
+  // Correction at low roughness for dielectrics, from Fdez-Aguera
+  vec3 k_s = FresnelSchlickRoughness(n_dot_v, f_0, roughness);
+
+  // vec2 F_ab  = textureLod(brdf_map, vec2(n_dot_v, roughness), 0.0).rg;
+  vec4 packed_sample = textureLod(brdf_map, vec2(n_dot_v, roughness), 0.0);
+  vec2 F_ab = vec2(UnpackFrom16Bits(packed_sample.xy), UnpackFrom16Bits(packed_sample.zw));
+  vec3 FssEss = k_s * F_ab.x + F_ab.y;
+
+
+  // Adding multiple scattering, from Fdez-Aguera
+  float Ess = F_ab.x + F_ab.y;
+  float Ems = 1.0 - Ess;
+  vec3 Favg = f_0 + (1.0 - f_0) / 21.0;
+  vec3 Fms = FssEss * Favg / (1.0 - (1.0 - Ess) * Favg);
+
+  vec3 Edss = 1.0 - (FssEss + Fms * Ems);
+  vec3 k_d = color * Edss;
+
+  return FssEss * radiance + (Fms * Ems + k_d) * irradiance;
+}
+
+void main() {
+  vec4 diffuseColor = vec4(pow(diffuse, vec3(2.2)), opacity);
   ReflectedLight reflectedLight = ReflectedLight(vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
 
-#include <map_fragment>
-#include <color_fragment>
+  #if defined(USE_MAP)
+    vec4 diffuse_color_sample = texture(map, vUv);
+    diffuseColor *= pow(diffuse_color_sample, vec4(2.2));
+  #endif
+
 #include <alphamap_fragment>
 #include <alphatest_fragment>
 #include <roughnessmap_fragment>
@@ -111,29 +162,11 @@ void main() {
 #include <lights_physical_fragment>
 #include <lights_fragment_begin>
 
-  diffuseColor.rgb = pow(diffuseColor.rgb, vec3(2.2));
-
   // ibl
   vec3 world_normal = inverseTransformDirection(normal, viewMatrix);
-
   vec3 view_vector = normalize(cameraPosition - world_position_out.xyz);
 
   float n_dot_v = max(dot(world_normal, view_vector), 0.0f);
-
-  vec3 f_0 = vec3(0.04);
-  f_0 = mix(f_0, diffuseColor.rgb, metalnessFactor);
-
-  // Correction at low roughness for dielectrics, from Fdez-Aguera
-  vec3 k_s = FresnelSchlickRoughness(n_dot_v, f_0, roughnessFactor);
-
-  vec2 brdf  = texture(brdf_map, vec2(n_dot_v, roughnessFactor)).rg;
-  vec3 single_scattering_energy = k_s * brdf.x + brdf.y;
-
-  // Adding multiple scattering, from Fdez-Aguera
-  float multiple_scattering_raw_energy = (1.0 - (brdf.x + brdf.y));
-  vec3 average_fresnel = f_0 + (1.0 - f_0) / 21.0;
-  vec3 multiple_scattering_energy = multiple_scattering_raw_energy * single_scattering_energy * average_fresnel / (1.0 - average_fresnel * multiple_scattering_raw_energy);
-  vec3 k_d = diffuseColor.rgb * (1.0 - single_scattering_energy - multiple_scattering_energy);
 
   #if defined(IBL_IN_VIEW_SPACE)
     irradiance = RGBDToHDR(texture(irradiance_map, normal));
@@ -167,27 +200,27 @@ void main() {
 
   vec4 reflectorTexel = texture2D(reflectorMap, uv);
 
-  reflectorTexel.rgb = pow(reflectorTexel.rgb, vec3(2.2));
-  reflectorTexel.rgb = untoneMap(reflectorTexel.rgb);
+  // reflectorTexel.rgb = pow(reflectorTexel.rgb, vec3(2.2));
+  // reflectorTexel.rgb = untoneMap(reflectorTexel.rgb);
 
   radiance = mix(radiance, reflectorTexel.rgb, orientationFactor*(1.0 - step(1.0, reflectorDepth)));
 #endif
 
-  reflectedLight.indirectSpecular += radiance * single_scattering_energy;
-  reflectedLight.indirectSpecular += irradiance * multiple_scattering_energy;
+  vec3 ambient = mix(GetDielectricMultipleScattering(n_dot_v, roughnessFactor, diffuseColor.rgb, irradiance, radiance),
+                     GetConductorMultipleScattering(n_dot_v, roughnessFactor, diffuseColor.rgb, irradiance, radiance), metalnessFactor);
 
-  reflectedLight.indirectDiffuse += irradiance * k_d;
+#if defined(USE_AOMAP)
+    vec3 occlusion = texture(aoMap, vUv2).rgb;
+    ambient *= occlusion;
+#endif
 
-  // modulation
-#include <aomap_fragment>
   vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
   vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
-  vec3 outgoingLight = totalDiffuse + totalSpecular;
+  vec3 outgoingLight = totalDiffuse + totalSpecular + ambient;
 
 #include <output_fragment>
   gl_FragColor.xyz = toneMap(gl_FragColor.xyz);
   gl_FragColor.xyz = pow(gl_FragColor.xyz, vec3(1.0/2.2));
 #include <premultiplied_alpha_fragment>
 #include <dithering_fragment>
-
 }

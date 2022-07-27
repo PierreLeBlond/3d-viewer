@@ -6,6 +6,7 @@ import loadAsset from './loadAsset';
 import createMaterial from './materials/Material/createMaterial';
 import Material from './materials/Material/Material';
 import playAllAnimations from './playAllAnimations';
+import buildBrdf from './textures/buildBrdf';
 import IblSpace from './textures/IblSpace';
 import loadIbl from './textures/loadIbl';
 import setIblSpace from './textures/setIblSpace';
@@ -36,6 +37,8 @@ export default class Viewer extends EventDispatcher {
     this.scene = scene;
     this.camera = camera;
     this.controls = controls;
+
+    this.buildBrdf();
   }
 
   public async loadAsset(url: string) {
@@ -48,6 +51,10 @@ export default class Viewer extends EventDispatcher {
 
   public setIblSpace(space: IblSpace) {
     setIblSpace(this.scene, space);
+  }
+
+  public buildBrdf() {
+    this.scene.userData.brdf = buildBrdf(this.renderer, this.camera);
   }
 
   public addSkybox() {

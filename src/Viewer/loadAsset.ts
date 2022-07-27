@@ -1,7 +1,6 @@
-import {Mesh, MeshPhysicalMaterial, Scene, WebGLRenderer} from 'three';
+import {LinearEncoding, Mesh, MeshPhysicalMaterial, Scene, WebGLRenderer} from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 import createMaterial from './materials/Material/createMaterial';
-import Material from './materials/Material/Material';
 
 export default async function loadAsset(
     renderer: WebGLRenderer, scene: Scene, url: string) {
@@ -33,11 +32,11 @@ export default async function loadAsset(
       const material = createMaterial(scene);
       material.vampMeshPhysicalMaterial(physicalMaterial);
 
-      // Set anisotropy level
       if (material.map != null) {
-        material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        // We do our own decoding within fragment shader
+        material.map.encoding = LinearEncoding;
       }
-      // Set normal map filtering
+
       if (material.normalMap != null) {
         material.normalMap.anisotropy =
             renderer.capabilities.getMaxAnisotropy();

@@ -88,7 +88,15 @@ export default class Material extends ShaderMaterial {
     this.internalIbl = ibl;
     this.uniforms.radiance_map.value = ibl.radiance;
     this.uniforms.irradiance_map.value = ibl.irradiance;
-    this.uniforms.brdf_map.value = ibl.brdf;
+  }
+
+  private internalBrdf: Texture;
+  public get brdf(): Texture {
+    return this.internalBrdf;
+  }
+  public set brdf(brdf: Texture) {
+    this.internalBrdf = brdf;
+    this.uniforms.brdf_map.value = brdf;
   }
 
   public get reflectorMap(): Texture {
