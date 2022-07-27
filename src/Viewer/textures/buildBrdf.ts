@@ -11,8 +11,6 @@ import vertexShader from '../materials/shaders/material/brdf.vertex.glsl';
 
 export default function buildBrdf(
     renderer: WebGLRenderer, camera: PerspectiveCamera) {
-  console.log('ping');
-
   const width = 256;
   const height = 256;
 
