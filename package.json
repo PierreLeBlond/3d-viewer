@@ -1,6 +1,6 @@
 {
   "name": "@s0rt/3d-viewer",
-  "version": "5.1.1",
+  "version": "5.2.0",
   "description": "Personal three.js based gltf viewer",
   "publishConfig": {
     "access": "public"
