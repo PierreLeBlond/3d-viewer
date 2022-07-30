@@ -2,26 +2,26 @@ const float kPi = 3.14159265359;
 
 varying vec2 uv_out;
 
-float VanDerCorpus(uint i, float base) {
+float VanDerCorpus(int i, float base) {
   float invBase = 1.0 / base;
   float denom   = 1.0;
   float result  = 0.0;
 
-  uint n = i;
+  int n = i;
 
   for(int j = 0; j < 32; ++j) {
-    if(n > 0u) {
+    if(n > 0) {
       denom   = mod(float(n), 2.0);
       result += denom * invBase;
       invBase = invBase / 2.0;
-      n       = uint(float(n) / 2.0);
+      n       = int(float(n) / 2.0);
     }
   }
 
   return result;
 }
 
-vec2 Hammersley(uint i, uint N) {
+vec2 Hammersley(int i, int N) {
   return vec2(float(i)/float(N), VanDerCorpus(i, 2.0));
 }
 
@@ -89,8 +89,8 @@ void main() {
 
   vec3 normal = vec3(0.0, 0.0, 1.0);
 
-  const uint sample_count = 1024u;
-  for(uint i = 0u; i < sample_count; ++i) {
+  const int sample_count = 1024;
+  for(int i = 0; i < sample_count; ++i) {
     vec2 hammersley_sample = Hammersley(i, sample_count);
     vec3 half_vector  = ImportanceSampleGGX(hammersley_sample, normal, roughness);
     vec3 light_vector  = normalize(2.0 * dot(view_vector, half_vector) * half_vector - view_vector);
@@ -112,6 +112,4 @@ void main() {
   bias /= float(sample_count);
 
   gl_FragColor = vec4(PackTo16Bits(scale), PackTo16Bits(bias));
-  // gl_FragColor = vec4(scale, bias, 0.0, 1.0);
-  // gl_FragColor = vec4(scale, bias, 0.0, 1.0);
 }

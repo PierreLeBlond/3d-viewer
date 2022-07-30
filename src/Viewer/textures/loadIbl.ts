@@ -1,3 +1,4 @@
+import {LinearFilter, LinearMipmapLinearFilter} from 'three/src/constants';
 import Ibl from './Ibl';
 import loadDdsTexture from './loadDdsTexture';
 import loadTexture from './loadTexture';
@@ -9,6 +10,9 @@ export default async function loadIbl(
 
   const [radiance, irradiance] = await Promise.all(
       [loadDdsTexture(radiance_filename), loadDdsTexture(irradiance_filename)]);
+
+  radiance.minFilter = LinearMipmapLinearFilter;
+  irradiance.minFilter = LinearFilter;
 
   return {
     radiance, irradiance

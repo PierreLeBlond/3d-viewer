@@ -7,8 +7,8 @@ uniform float roughness;
 uniform float metalness;
 uniform float opacity;
 
-uniform samplerCube radiance_map;
 uniform samplerCube irradiance_map;
+uniform samplerCube radiance_map;
 uniform sampler2D brdf_map;
 
 varying vec3 vViewPosition;
@@ -103,8 +103,7 @@ vec3 GetConductorMultipleScattering(float n_dot_v, float roughness, vec3 color, 
   // Correction at low roughness for dielectrics, from Fdez-Aguera
   vec3 k_s = FresnelSchlickRoughness(n_dot_v, f_0, roughness);
 
-  // vec2 F_ab = textureLod(brdf_map, vec2(n_dot_v, roughness), 0.0).rg;
-  vec4 packed_sample = textureLod(brdf_map, vec2(n_dot_v, roughness), 0.0);
+  vec4 packed_sample = texture2D(brdf_map, vec2(n_dot_v, roughness));
   vec2 F_ab = vec2(UnpackFrom16Bits(packed_sample.xy), UnpackFrom16Bits(packed_sample.zw));
   vec3 FssEss = k_s * F_ab.x + F_ab.y;
 
@@ -124,8 +123,7 @@ vec3 GetDielectricMultipleScattering(float n_dot_v, float roughness, vec3 color,
   // Correction at low roughness for dielectrics, from Fdez-Aguera
   vec3 k_s = FresnelSchlickRoughness(n_dot_v, f_0, roughness);
 
-  // vec2 F_ab  = textureLod(brdf_map, vec2(n_dot_v, roughness), 0.0).rg;
-  vec4 packed_sample = textureLod(brdf_map, vec2(n_dot_v, roughness), 0.0);
+  vec4 packed_sample = texture2D(brdf_map, vec2(n_dot_v, roughness));
   vec2 F_ab = vec2(UnpackFrom16Bits(packed_sample.xy), UnpackFrom16Bits(packed_sample.zw));
   vec3 FssEss = k_s * F_ab.x + F_ab.y;
 
@@ -147,7 +145,7 @@ void main() {
   ReflectedLight reflectedLight = ReflectedLight(vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
 
   #if defined(USE_MAP)
-    vec4 diffuse_color_sample = texture(map, vUv);
+    vec4 diffuse_color_sample = texture2D(map, vUv);
     diffuseColor *= pow(diffuse_color_sample, vec4(2.2));
   #endif
 
@@ -166,12 +164,12 @@ void main() {
   vec3 world_normal = inverseTransformDirection(normal, viewMatrix);
   vec3 view_vector = normalize(cameraPosition - world_position_out.xyz);
 
-  float n_dot_v = max(dot(world_normal, view_vector), 0.0f);
+  float n_dot_v = max(dot(world_normal, view_vector), 0.0);
 
   #if defined(IBL_IN_VIEW_SPACE)
-    irradiance = RGBDToHDR(texture(irradiance_map, normal));
+    irradiance = RGBDToHDR(textureCube(irradiance_map, normal));
   #else
-    irradiance = RGBDToHDR(texture(irradiance_map, world_normal));
+    irradiance = RGBDToHDR(textureCube(irradiance_map, world_normal));
   #endif
 
   float lowerLevel = floor(roughnessFactor * kMaxRadianceLod);
@@ -184,8 +182,8 @@ void main() {
     reflection_vector = vec3(viewMatrix * vec4(reflection_vector, 0.0));
   #endif
 
-  vec3 lowerRadianceSample = RGBDToHDR(textureLod(radiance_map, reflection_vector, lowerLevel));
-  vec3 upperRadianceSample = RGBDToHDR(textureLod(radiance_map, reflection_vector, upperLevel));
+  vec3 lowerRadianceSample = RGBDToHDR(textureCubeLodEXT(radiance_map, reflection_vector, lowerLevel));
+  vec3 upperRadianceSample = RGBDToHDR(textureCubeLodEXT(radiance_map, reflection_vector, upperLevel));
   radiance = mix(lowerRadianceSample, upperRadianceSample, (roughnessFactor * kMaxRadianceLod - lowerLevel));
 
 #if defined(REFLECTOR)
@@ -210,7 +208,7 @@ void main() {
                      GetConductorMultipleScattering(n_dot_v, roughnessFactor, diffuseColor.rgb, irradiance, radiance), metalnessFactor);
 
 #if defined(USE_AOMAP)
-    vec3 occlusion = texture(aoMap, vUv2).rgb;
+    vec3 occlusion = texture2D(aoMap, vUv2).rgb;
     ambient *= occlusion;
 #endif
 

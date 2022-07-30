@@ -166,6 +166,8 @@ export default class Material extends ShaderMaterial {
 
     this.isMeshPhysicalMaterial = true;
 
+    this.extensions.shaderTextureLOD = true;
+
     this.normalMapType = TangentSpaceNormalMap;
   }
 
