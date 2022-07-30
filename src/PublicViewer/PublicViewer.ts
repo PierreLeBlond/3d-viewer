@@ -47,4 +47,8 @@ export default class PublicViewer extends EventDispatcher {
   public getAllAnimations(): AnimationMixer[] {
     return this.viewer.getAllAnimations();
   }
+
+  public takeScreenshot() {
+    this.viewer.takeScreenshot();
+  }
 }

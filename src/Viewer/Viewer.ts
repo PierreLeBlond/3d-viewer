@@ -6,6 +6,7 @@ import loadAsset from './loadAsset';
 import createMaterial from './materials/Material/createMaterial';
 import Material from './materials/Material/Material';
 import playAllAnimations from './playAllAnimations';
+import takeScreenshot from './renderer/takescreenshot';
 import buildBrdf from './textures/buildBrdf';
 import IblSpace from './textures/IblSpace';
 import loadIbl from './textures/loadIbl';
@@ -83,6 +84,10 @@ export default class Viewer extends EventDispatcher {
 
   public getAllAnimations(): AnimationMixer[] {
     return this.animationMixers;
+  }
+
+  public takeScreenshot() {
+    takeScreenshot(this.renderer);
   }
 
   private resize() {
