@@ -88,6 +88,7 @@ export default class Material extends ShaderMaterial {
     this.internalIbl = ibl;
     this.uniforms.radiance_map.value = ibl.radiance;
     this.uniforms.irradiance_map.value = ibl.irradiance;
+    this.uniforms.ibl_matrix.value = ibl.matrix;
   }
 
   private internalBrdf: Texture;
@@ -145,6 +146,7 @@ export default class Material extends ShaderMaterial {
         metalness: {value: 1.0},
         radiance_map: {value: null},
         irradiance_map: {value: null},
+        ibl_matrix: {value: null},
         brdf_map: {value: null},
         reflectorMap: {value: null},
         reflectorDepthMap: {value: null},

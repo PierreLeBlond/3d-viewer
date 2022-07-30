@@ -1,4 +1,5 @@
 import {LinearFilter, LinearMipmapLinearFilter} from 'three/src/constants';
+import {Matrix4} from 'three/src/math/Matrix4';
 import Ibl from './Ibl';
 import loadDdsTexture from './loadDdsTexture';
 import loadTexture from './loadTexture';
@@ -15,6 +16,6 @@ export default async function loadIbl(
   irradiance.minFilter = LinearFilter;
 
   return {
-    radiance, irradiance
+    radiance, irradiance, matrix: new Matrix4()
   }
 }

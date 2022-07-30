@@ -11,6 +11,8 @@ uniform samplerCube irradiance_map;
 uniform samplerCube radiance_map;
 uniform sampler2D brdf_map;
 
+uniform mat4 ibl_matrix;
+
 varying vec3 vViewPosition;
 #include <common>
 #include <packing>
@@ -167,10 +169,11 @@ void main() {
   float n_dot_v = max(dot(world_normal, view_vector), 0.0);
 
   #if defined(IBL_IN_VIEW_SPACE)
-    irradiance = RGBDToHDR(textureCube(irradiance_map, normal));
+    vec3 irradiance_normal = vec3(ibl_matrix * vec4(normal, 0.0));
   #else
-    irradiance = RGBDToHDR(textureCube(irradiance_map, world_normal));
+    vec3 irradiance_normal = vec3(ibl_matrix * vec4(world_normal, 0.0));
   #endif
+  irradiance = RGBDToHDR(textureCube(irradiance_map, irradiance_normal));
 
   float lowerLevel = floor(roughnessFactor * kMaxRadianceLod);
   float upperLevel = ceil(roughnessFactor * kMaxRadianceLod);
@@ -178,6 +181,7 @@ void main() {
   vec3 reflection_vector = reflect(-view_vector, world_normal);
   // Mixing the reflection with the normal is more accurate and keeps rough objects from gathering light from behind their tangent plane.
   reflection_vector = normalize(mix(reflection_vector, world_normal, roughnessFactor * roughnessFactor));
+  reflection_vector = vec3(ibl_matrix * vec4(reflection_vector, 0.0));
   #if defined(IBL_IN_VIEW_SPACE)
     reflection_vector = vec3(viewMatrix * vec4(reflection_vector, 0.0));
   #endif
@@ -187,7 +191,7 @@ void main() {
   radiance = mix(lowerRadianceSample, upperRadianceSample, (roughnessFactor * kMaxRadianceLod - lowerLevel));
 
 #if defined(REFLECTOR)
-  vec4 positionClip = projectionMatrix*reflectorViewMatrix*world_position_out;
+  vec4 positionClip = projectionMatrix*viewMatrix*world_position_out;
   vec3 positionNDC = positionClip.xyz / positionClip.w;
   vec2 uv = positionNDC.xy*0.5 + 0.5;
 
@@ -198,8 +202,8 @@ void main() {
 
   vec4 reflectorTexel = texture2D(reflectorMap, uv);
 
-  // reflectorTexel.rgb = pow(reflectorTexel.rgb, vec3(2.2));
-  // reflectorTexel.rgb = untoneMap(reflectorTexel.rgb);
+  reflectorTexel.rgb = pow(reflectorTexel.rgb, vec3(2.2));
+  reflectorTexel.rgb = untoneMap(reflectorTexel.rgb);
 
   radiance = mix(radiance, reflectorTexel.rgb, orientationFactor*(1.0 - step(1.0, reflectorDepth)));
 #endif
