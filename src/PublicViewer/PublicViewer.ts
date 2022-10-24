@@ -1,11 +1,11 @@
-import {AnimationMixer, EventDispatcher, Texture} from 'three';
+import { AnimationMixer, EventDispatcher } from 'three';
 import launchTasks from '../Viewer/launchTasks';
-import {Tasks} from '../Viewer/Tasks';
+import { Tasks } from '../Viewer/Tasks';
 import IblSpace from '../Viewer/textures/IblSpace';
 import Viewer from '../Viewer/Viewer';
 
 export default class PublicViewer extends EventDispatcher {
-  private tasks: Tasks = {parallelTasks: []};
+  private tasks: Tasks = { parallelTasks: [] };
   public viewer: Viewer = new Viewer();
 
   public addTasks(tasks: Tasks) {

@@ -1,4 +1,4 @@
-import {Color, Matrix4, MeshPhysicalMaterial, Scene, ShaderMaterial, TangentSpaceNormalMap, Texture, UniformsLib, UniformsUtils} from 'three';
+import { Color, Matrix4, MeshPhysicalMaterial, Scene, ShaderMaterial, TangentSpaceNormalMap, Texture, UniformsLib, UniformsUtils } from 'three';
 import Ibl from '../../textures/Ibl';
 import IblSpace from '../../textures/IblSpace';
 import fragmentShader from '../shaders/material/material.fragment.glsl';
@@ -137,22 +137,22 @@ export default class Material extends ShaderMaterial {
   public scene: Scene;
 
   private constructor(scene: Scene) {
-    const uniforms: {[n: string]: {value: any}} = UniformsUtils.merge([
+    const uniforms: { [n: string]: { value: any } } = UniformsUtils.merge([
       UniformsLib.common, UniformsLib.envmap, UniformsLib.roughnessmap,
       UniformsLib.metalnessmap, UniformsLib.normalmap, UniformsLib.aomap,
       UniformsLib.lights, {
-        envMapIntensity: {value: 1},
-        roughness: {value: 1.0},
-        metalness: {value: 1.0},
-        radiance_map: {value: null},
-        irradiance_map: {value: null},
-        ibl_matrix: {value: null},
-        brdf_map: {value: null},
-        reflectorMap: {value: null},
-        reflectorDepthMap: {value: null},
-        reflectorMatrix: {value: new Matrix4()},
-        reflectorProjectionMatrix: {value: new Matrix4()},
-        reflectorViewMatrix: {value: new Matrix4()}
+        envMapIntensity: { value: 1 },
+        roughness: { value: 1.0 },
+        metalness: { value: 1.0 },
+        radiance_map: { value: null },
+        irradiance_map: { value: null },
+        ibl_matrix: { value: new Matrix4() },
+        brdf_map: { value: null },
+        reflectorMap: { value: null },
+        reflectorDepthMap: { value: null },
+        reflectorMatrix: { value: new Matrix4() },
+        reflectorProjectionMatrix: { value: new Matrix4() },
+        reflectorViewMatrix: { value: new Matrix4() }
       }
     ]);
 
@@ -195,7 +195,7 @@ export default class Material extends ShaderMaterial {
   public customProgramCacheKey(): string {
     const reflectorCacheKey = !!this.reflectorMap ? 'reflector' : '';
     const iblInViewSpaceCacheKey =
-        this.scene.userData.iblSpace == IblSpace.View ? 'iblInViewSpace' : '';
+      this.scene.userData.iblSpace == IblSpace.View ? 'iblInViewSpace' : '';
     return `${reflectorCacheKey}${iblInViewSpaceCacheKey}`;
   }
 

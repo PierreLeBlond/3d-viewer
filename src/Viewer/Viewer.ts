@@ -1,5 +1,5 @@
-import {AnimationMixer, Clock, EventDispatcher, PerspectiveCamera, Scene, WebGLRenderer} from 'three';
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import { AnimationMixer, Clock, EventDispatcher, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import addSkybox from './addSkybox';
 import init from './init';
 import loadAsset from './loadAsset';
@@ -11,6 +11,7 @@ import buildBrdf from './textures/buildBrdf';
 import IblSpace from './textures/IblSpace';
 import loadIbl from './textures/loadIbl';
 import setIblSpace from './textures/setIblSpace';
+import setIblToScene from './textures/setIblToScene';
 
 export default class Viewer extends EventDispatcher {
   public scene: Scene;
@@ -32,7 +33,7 @@ export default class Viewer extends EventDispatcher {
       throw new Error('init: element id required');
     }
 
-    const {renderer, scene, camera, controls} = init(elementId);
+    const { renderer, scene, camera, controls } = init(elementId);
 
     this.renderer = renderer;
     this.scene = scene;
@@ -47,7 +48,8 @@ export default class Viewer extends EventDispatcher {
   }
 
   public async loadIbl(path: string, name: string): Promise<void> {
-    this.scene.userData.ibl = await loadIbl(path, name);
+    const ibl = await loadIbl(path, name);
+    setIblToScene(ibl, this.scene);
   }
 
   public setIblSpace(space: IblSpace) {
@@ -67,14 +69,19 @@ export default class Viewer extends EventDispatcher {
   }
 
   public launch() {
+
+    if (!this.scene.userData.ibl) {
+      throw new Error('Ibl must be load before launching the viewer');
+    }
+
     this.addEventListener('updated', () => {
       requestAnimationFrame(() => this.update());
     });
 
     window
-        .addEventListener('resize', () => this.resize(), false)
+      .addEventListener('resize', () => this.resize(), false)
 
-            this.resize();
+    this.resize();
     this.update();
   }
 
@@ -91,7 +98,7 @@ export default class Viewer extends EventDispatcher {
   }
 
   private resize() {
-    const {clientWidth, clientHeight} = this.renderer.domElement.parentElement;
+    const { clientWidth, clientHeight } = this.renderer.domElement.parentElement;
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight);
@@ -108,7 +115,7 @@ export default class Viewer extends EventDispatcher {
 
     // 2. Update animations
     const delta = this.clock.getDelta();
-    this.scene.dispatchEvent({type: 'animate', delta});
+    this.scene.dispatchEvent({ type: 'animate', delta });
 
     // 3. Update preprocesses
     this.dispatchEvent({
@@ -120,6 +127,6 @@ export default class Viewer extends EventDispatcher {
     // 4. Update screen
     this.render();
 
-    this.dispatchEvent({type: 'updated'});
+    this.dispatchEvent({ type: 'updated' });
   }
 }

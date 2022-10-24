@@ -1,4 +1,4 @@
-import {DepthTexture, Matrix4, Mesh, NearestFilter, Object3D, RGBAFormat, WebGLRenderTarget} from 'three';
+import { DepthTexture, Matrix4, Mesh, NearestFilter, Object3D, RGBAFormat, WebGLRenderTarget } from 'three';
 import Material from '../../materials/Material/Material';
 import setIblToScene from '../../textures/setIblToScene';
 import Viewer from '../../Viewer';
@@ -26,7 +26,7 @@ export default class Reflector extends Object3D {
     };
 
     this.renderTarget =
-        new WebGLRenderTarget(textureWidth, textureHeight, parameters);
+      new WebGLRenderTarget(textureWidth, textureHeight, parameters);
     this.renderTarget.texture.generateMipmaps = true;
 
     this.renderTarget.depthTexture = new DepthTexture(1024, 1024);
@@ -34,7 +34,7 @@ export default class Reflector extends Object3D {
     this.assignReflectorToMesh(target);
     target.traverse((child: Mesh) => this.assignReflectorToMesh(child));
 
-    viewer.addEventListener('updatePreprocesses', ({camera, renderer}) => {
+    viewer.addEventListener('updatePreprocesses', ({ camera, renderer }) => {
       // Render
       this.renderTarget.texture.encoding = renderer.outputEncoding;
 
@@ -49,8 +49,8 @@ export default class Reflector extends Object3D {
       renderer.setRenderTarget(this.renderTarget);
 
       renderer.state.buffers.depth.setMask(
-          true);  // make sure the depth buffer is writable so it can be
-                  // properly cleared, see #18897
+        true);  // make sure the depth buffer is writable so it can be
+      // properly cleared, see #18897
 
       target.visible = false;
 
