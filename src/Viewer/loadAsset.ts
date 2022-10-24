@@ -1,10 +1,12 @@
-import {LinearEncoding, Mesh, MeshPhysicalMaterial, Scene, WebGLRenderer} from 'three';
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
+import { LinearEncoding, Mesh, MeshPhysicalMaterial, Scene, WebGLRenderer } from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import createMaterial from './materials/Material/createMaterial';
 
 export default async function loadAsset(
-    renderer: WebGLRenderer, scene: Scene, url: string) {
+  renderer: WebGLRenderer, scene: Scene, url: string) {
   const gltfLoader = new GLTFLoader();
+  gltfLoader.withCredentials = true;
+  gltfLoader.crossOrigin = 'use-credentials';
 
   const baseUrl = url.match(/(?<base>.+\/)(?:\w|\.)+/).groups.base;
   gltfLoader.resourcePath = baseUrl;
@@ -39,7 +41,7 @@ export default async function loadAsset(
 
       if (material.normalMap != null) {
         material.normalMap.anisotropy =
-            renderer.capabilities.getMaxAnisotropy();
+          renderer.capabilities.getMaxAnisotropy();
       }
 
       object.material = material;

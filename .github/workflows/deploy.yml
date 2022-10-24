@@ -1,0 +1,20 @@
+name: Deploy to planethoster
+on: push
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: npm run build
+      - uses: garygrossgarten/github-action-scp@release
+        with:
+          local: dist
+          remote: app/3d-viewer
+          rmRemote: true
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+    

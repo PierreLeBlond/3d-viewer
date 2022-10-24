@@ -8,7 +8,7 @@
   "engines": {
     "node": ">=14.17.0"
   },
-  "type": "dist/index.d.js",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build": "NODE_ENV=production webpack --config ./webpack/config.js",
@@ -19,15 +19,15 @@
   "author": "PierreLeBlond",
   "license": "ISC",
   "devDependencies": {
-    "@types/three": "^0.142.0",
-    "three": "^0.142.0",
+    "@types/three": "^0.144.0",
+    "three": "^0.145.0",
     "file-loader": "^6.2.0",
-    "ts-loader": "^9.3.1",
-    "typescript": "^4.7.4",
+    "ts-loader": "^9.4.1",
+    "typescript": "^4.8.4",
     "webpack": "^5.74.0",
-    "webpack-bundle-analyzer": "^4.5.0",
+    "webpack-bundle-analyzer": "^4.6.1",
     "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.9.3",
+    "webpack-dev-server": "^4.11.1",
     "webpack-glsl-loader": "^1.0.1",
     "webpack-merge": "^5.8.0"
   }
