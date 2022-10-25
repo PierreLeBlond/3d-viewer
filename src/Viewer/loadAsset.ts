@@ -5,8 +5,6 @@ import createMaterial from './materials/Material/createMaterial';
 export default async function loadAsset(
   renderer: WebGLRenderer, scene: Scene, url: string) {
   const gltfLoader = new GLTFLoader();
-  gltfLoader.withCredentials = true;
-  gltfLoader.crossOrigin = 'use-credentials';
 
   const baseUrl = url.match(/(?<base>.+\/)(?:\w|\.)+/).groups.base;
   gltfLoader.resourcePath = baseUrl;
