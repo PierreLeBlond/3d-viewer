@@ -1,4 +1,4 @@
-import {WebGLRenderer} from 'three/src/renderers/WebGLRenderer';
+import type { WebGLRenderer } from 'three/src/renderers/WebGLRenderer';
 
 const saveBlob = (blob: Blob, filename: string) => {
   const a = document.createElement('a');
@@ -11,7 +11,10 @@ const saveBlob = (blob: Blob, filename: string) => {
 };
 
 export default function takeScreenshot(renderer: WebGLRenderer) {
-  const blob = renderer.domElement.toBlob((blob: Blob) => {
+  renderer.domElement.toBlob((blob: Blob | null) => {
+    if (!blob) {
+      return;
+    }
     saveBlob(blob, 'screenshot');
   });
 }

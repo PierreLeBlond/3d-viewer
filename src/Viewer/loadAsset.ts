@@ -1,4 +1,4 @@
-import { LinearEncoding, Mesh, MeshPhysicalMaterial, Scene, WebGLRenderer } from 'three';
+import { LinearEncoding, Mesh, MeshPhysicalMaterial, Object3D, Scene, WebGLRenderer } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import createMaterial from './materials/Material/createMaterial';
 
@@ -6,7 +6,12 @@ export default async function loadAsset(
   renderer: WebGLRenderer, scene: Scene, url: string) {
   const gltfLoader = new GLTFLoader();
 
-  const baseUrl = url.match(/(?<base>.+\/)(?:\w|\.)+/).groups.base;
+  const baseUrl = url.match(/(?<base>.+\/)(?:\w|\.)+/)?.groups?.['base'];
+
+  if (!baseUrl) {
+    throw new Error(`couldn't find asset base url from ${url}`);
+  }
+
   gltfLoader.resourcePath = baseUrl;
 
   const asset = await gltfLoader.loadAsync(url);
@@ -16,6 +21,11 @@ export default async function loadAsset(
   // dispatch animations
   asset.animations.forEach(animation => {
     const name = animation.name.split('|')[0];
+
+    if (!name) {
+      throw new Error(`couldn't find animation name from ${animation.name}`);
+    }
+
     const object = scene.getObjectByName(name);
     if (object) {
       object.animations.push(animation);
@@ -25,8 +35,10 @@ export default async function loadAsset(
   });
 
   // fix imported textures
-  scene.traverse((object: Mesh) => {
-    const physicalMaterial = object.material as MeshPhysicalMaterial;
+  scene.traverse((object: Object3D) => {
+    const mesh = object as Mesh;
+
+    const physicalMaterial = mesh.material as MeshPhysicalMaterial;
 
     if (physicalMaterial) {
       const material = createMaterial(scene);
@@ -42,7 +54,7 @@ export default async function loadAsset(
           renderer.capabilities.getMaxAnisotropy();
       }
 
-      object.material = material;
+      mesh.material = material;
     }
   });
 }

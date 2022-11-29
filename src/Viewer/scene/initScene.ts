@@ -1,6 +1,6 @@
-import {Scene, WebGLRenderer} from 'three';
+import { Scene } from 'three';
 
-export default function initScene(renderer: WebGLRenderer) {
+export default function initScene() {
   const scene = new Scene();
-  return {scene};
+  return { scene };
 }

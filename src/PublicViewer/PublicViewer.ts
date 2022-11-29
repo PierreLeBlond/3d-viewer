@@ -1,31 +1,41 @@
 import { AnimationMixer, EventDispatcher } from 'three';
 import launchTasks from '../Viewer/launchTasks';
-import { Tasks } from '../Viewer/Tasks';
+import type { Tasks } from '../Viewer/Tasks';
 import IblSpace from '../Viewer/textures/IblSpace';
 import Viewer from '../Viewer/Viewer';
 
 export default class PublicViewer extends EventDispatcher {
   private tasks: Tasks = { parallelTasks: [] };
-  public viewer: Viewer = new Viewer();
+  public viewer: Viewer;
+
+  constructor(elementId: string) {
+    super();
+    this.viewer = new Viewer(elementId);
+  }
 
   public addTasks(tasks: Tasks) {
+    if (!this.tasks.parallelTasks) {
+      this.tasks.parallelTasks = [];
+    }
     this.tasks.parallelTasks.push(tasks);
   }
 
-  public async launch(elementId: string) {
-    this.viewer.init(elementId);
-
-    await launchTasks(this, this.tasks);
-
+  public async launch() {
+    await this.launchTasks();
     this.viewer.launch();
+  }
+
+  public async launchTasks() {
+    await launchTasks(this, this.tasks);
+    this.tasks = { parallelTasks: [] };
   }
 
   public async loadAsset(url: string) {
     await this.viewer.loadAsset(url);
   }
 
-  public async loadIbl(path: string, name: string): Promise<void> {
-    await this.viewer.loadIbl(path, name);
+  public async loadIbl(irradiancePath: string, radiancePath: string): Promise<void> {
+    await this.viewer.loadIbl(irradiancePath, radiancePath);
   }
 
   public setIblInViewSpace() {

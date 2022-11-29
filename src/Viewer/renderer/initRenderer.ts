@@ -1,10 +1,9 @@
-import {Color, LinearEncoding, NoToneMapping, WebGLRenderer} from 'three';
+import { Color, LinearEncoding, NoToneMapping, WebGLRenderer } from 'three';
 
-export default function initRenderer(elementId: string): WebGLRenderer {
+export default function initRenderer(element: HTMLElement): WebGLRenderer {
   const renderer = new WebGLRenderer(
-      {antialias: true, alpha: true, preserveDrawingBuffer: true});
+    { antialias: true, alpha: true, preserveDrawingBuffer: true });
 
-  const element = document.getElementById(elementId);
 
   renderer.setSize(element.clientWidth, element.clientHeight);
   renderer.setClearColor(new Color(255, 255, 255), 0);

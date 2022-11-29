@@ -1,7 +1,7 @@
 import { DepthTexture, Matrix4, Mesh, NearestFilter, Object3D, RGBAFormat, WebGLRenderTarget } from 'three';
-import Material from '../../materials/Material/Material';
+import type Material from '../../materials/Material/Material';
 import setIblToScene from '../../textures/setIblToScene';
-import Viewer from '../../Viewer';
+import type Viewer from '../../Viewer';
 
 interface ReflectorOptions {
   textureWidth?: number, textureHeight?: number, shader?: number,
@@ -10,6 +10,8 @@ interface ReflectorOptions {
 export default class Reflector extends Object3D {
   public reflectorMatrix: Matrix4 = new Matrix4();
   public renderTarget: WebGLRenderTarget;
+
+  private updatePreprocessesEventListener: { ({ camera, renderer }: { camera: any; renderer: any; }): void; (event: THREE.Event & { type: "updatePreprocesses"; } & { target: Viewer; }): void; };
 
   constructor(viewer: Viewer, target: Mesh, options: ReflectorOptions = {}) {
     super();
@@ -32,9 +34,11 @@ export default class Reflector extends Object3D {
     this.renderTarget.depthTexture = new DepthTexture(1024, 1024);
 
     this.assignReflectorToMesh(target);
-    target.traverse((child: Mesh) => this.assignReflectorToMesh(child));
+    target.traverse((child: Object3D) => {
+      this.assignReflectorToMesh(child as Mesh)
+    });
 
-    viewer.addEventListener('updatePreprocesses', ({ camera, renderer }) => {
+    this.updatePreprocessesEventListener = ({ renderer }) => {
       // Render
       this.renderTarget.texture.encoding = renderer.outputEncoding;
 
@@ -57,15 +61,15 @@ export default class Reflector extends Object3D {
       // Rather than modifying the camera, let's put the world upside down !
       // Also we don't forget to rotate the environment accordingly.
       viewer.scene.scale.set(1.0, -1.0, 1.0);
-      viewer.scene.userData.ibl.matrix = viewer.scene.matrixWorld;
-      setIblToScene(viewer.scene.userData.ibl, viewer.scene);
+      viewer.scene.userData['ibl'].matrix = viewer.scene.matrixWorld;
+      setIblToScene(viewer.scene.userData['ibl'], viewer.scene);
 
       if (renderer.autoClear === false) renderer.clear();
       renderer.render(viewer.scene, viewer.camera);
 
       viewer.scene.scale.set(1.0, 1.0, 1.0);
-      viewer.scene.userData.ibl.matrix = viewer.scene.matrixWorld;
-      setIblToScene(viewer.scene.userData.ibl, viewer.scene);
+      viewer.scene.userData['ibl'].matrix = viewer.scene.matrixWorld;
+      setIblToScene(viewer.scene.userData['ibl'], viewer.scene);
 
       target.visible = true;
 
@@ -73,7 +77,15 @@ export default class Reflector extends Object3D {
       renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
 
       renderer.setRenderTarget(currentRenderTarget);
-    });
+    };
+  }
+
+  public start(viewer: Viewer) {
+    viewer.addEventListener('updatePreprocesses', this.updatePreprocessesEventListener);
+  }
+
+  public stop(viewer: Viewer) {
+    viewer.removeEventListener('updatePreprocesses', this.updatePreprocessesEventListener);
   }
 
   private assignReflectorToMesh(target: Mesh) {

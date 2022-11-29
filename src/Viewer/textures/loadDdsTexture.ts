@@ -1,6 +1,6 @@
 import { LinearEncoding, LinearFilter, LinearMipmapLinearFilter } from 'three';
 import { DDSLoader } from 'three/examples/jsm/loaders/DDSLoader';
-import { Texture } from 'three/src/textures/Texture';
+import type { Texture } from 'three/src/textures/Texture';
 
 export default async function loadDdsTexture(path: string): Promise<Texture> {
   const loader = new DDSLoader();

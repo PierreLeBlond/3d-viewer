@@ -1,14 +1,15 @@
 import { AnimationMixer, Clock, EventDispatcher, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as THREE from 'three';
+import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import addSkybox from './addSkybox';
 import init from './init';
 import loadAsset from './loadAsset';
 import createMaterial from './materials/Material/createMaterial';
-import Material from './materials/Material/Material';
+import type Material from './materials/Material/Material';
 import playAllAnimations from './playAllAnimations';
 import takeScreenshot from './renderer/takescreenshot';
 import buildBrdf from './textures/buildBrdf';
-import IblSpace from './textures/IblSpace';
+import type IblSpace from './textures/IblSpace';
 import loadIbl from './textures/loadIbl';
 import setIblSpace from './textures/setIblSpace';
 import setIblToScene from './textures/setIblToScene';
@@ -18,25 +19,35 @@ export default class Viewer extends EventDispatcher {
   public camera: PerspectiveCamera;
   public renderer: WebGLRenderer;
   public controls: OrbitControls;
+  public element: HTMLElement;
 
+  public context = THREE;
+  private scenes: Scene[] = [];
   private clock: Clock;
 
-  private animationMixers: AnimationMixer[];
+  private animationMixers: AnimationMixer[] = [];
 
-  public constructor() {
+  public constructor(elementId: string) {
     super();
     this.clock = new Clock();
-  }
 
-  public init(elementId: string) {
     if (!elementId) {
       throw new Error('init: element id required');
     }
 
-    const { renderer, scene, camera, controls } = init(elementId);
+    const element = document.getElementById(elementId);
+
+    if (!element) {
+      throw new Error('init: element not found');
+    }
+
+    this.element = element;
+
+    const { renderer, scene, camera, controls } = init(this.element);
 
     this.renderer = renderer;
     this.scene = scene;
+    this.scenes.push(this.scene);
     this.camera = camera;
     this.controls = controls;
 
@@ -47,8 +58,8 @@ export default class Viewer extends EventDispatcher {
     await loadAsset(this.renderer, this.scene, url);
   }
 
-  public async loadIbl(path: string, name: string): Promise<void> {
-    const ibl = await loadIbl(path, name);
+  public async loadIbl(irradiancePath: string, radiancePath: string): Promise<void> {
+    const ibl = await loadIbl(irradiancePath, radiancePath);
     setIblToScene(ibl, this.scene);
   }
 
@@ -57,7 +68,7 @@ export default class Viewer extends EventDispatcher {
   }
 
   public buildBrdf() {
-    this.scene.userData.brdf = buildBrdf(this.renderer, this.camera);
+    this.scene.userData['brdf'] = buildBrdf(this.renderer, this.camera);
   }
 
   public addSkybox() {
@@ -68,9 +79,38 @@ export default class Viewer extends EventDispatcher {
     return createMaterial(this.scene);
   }
 
+  public getScene(name: string): Scene | null {
+    const scene = this.scenes.find((scene: Scene) => scene.name == name);
+    if (!scene) {
+      return null;
+    }
+    return scene;
+  }
+
+  public createScene(name: string): Scene {
+    const scene = new Scene();
+    scene.name = name;
+
+    scene.userData['brdf'] = this.scene.userData['brdf'];
+    scene.userData['ibl'] = this.scene.userData['ibl'];
+    scene.userData['iblSpace'] = this.scene.userData['iblSpace'];
+
+    this.scenes.push(scene);
+
+    return scene;
+  }
+
+  public addScene(scene: Scene) {
+    this.scenes.push(scene);
+  }
+
+  public setScene(scene: Scene) {
+    this.scene = scene;
+  }
+
   public launch() {
 
-    if (!this.scene.userData.ibl) {
+    if (!this.scene.userData['ibl']) {
       throw new Error('Ibl must be load before launching the viewer');
     }
 
@@ -98,7 +138,11 @@ export default class Viewer extends EventDispatcher {
   }
 
   private resize() {
-    const { clientWidth, clientHeight } = this.renderer.domElement.parentElement;
+    const { parentElement } = this.renderer.domElement;
+    if (!parentElement) {
+      throw new Error('dom element has no parent');
+    }
+    const { clientWidth, clientHeight } = parentElement;
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight);

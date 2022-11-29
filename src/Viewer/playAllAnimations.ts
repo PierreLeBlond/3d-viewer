@@ -1,4 +1,4 @@
-import {AnimationMixer, Object3D, Scene} from 'three';
+import { AnimationMixer, Object3D, Scene } from 'three';
 
 export default function playAllAnimations(scene: Scene): AnimationMixer[] {
   const animationMixers: AnimationMixer[] = [];
@@ -10,7 +10,7 @@ export default function playAllAnimations(scene: Scene): AnimationMixer[] {
         action.play();
       });
       scene.addEventListener('animate', (event) => {
-        mixer.update(event.delta);
+        mixer.update(event['delta']);
       });
       animationMixers.push(mixer);
     }
