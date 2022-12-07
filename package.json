@@ -5,6 +5,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "type": "module",
   "engines": {
     "node": ">=14.17.0"
   },

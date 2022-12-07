@@ -1,31 +1,34 @@
-import { AnimationMixer, Clock, EventDispatcher, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { Clock, EventDispatcher, Material, Mesh, Object3D, PerspectiveCamera, Texture, WebGLRenderer, WebGLRenderTarget } from 'three';
 import * as THREE from 'three';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import addSkybox from './addSkybox';
 import init from './init';
-import loadAsset from './loadAsset';
-import createMaterial from './materials/Material/createMaterial';
-import type Material from './materials/Material/Material';
-import playAllAnimations from './playAllAnimations';
 import takeScreenshot from './renderer/takescreenshot';
 import buildBrdf from './textures/buildBrdf';
-import type IblSpace from './textures/IblSpace';
+import IblSpace from './textures/IblSpace';
 import loadIbl from './textures/loadIbl';
-import setIblSpace from './textures/setIblSpace';
-import setIblToScene from './textures/setIblToScene';
+import type Ibl from './textures/Ibl';
+import Scene from './Scene/Scene';
 
 export default class Viewer extends EventDispatcher {
-  public scene: Scene;
-  public camera: PerspectiveCamera;
-  public renderer: WebGLRenderer;
-  public controls: OrbitControls;
   public element: HTMLElement;
 
-  public context = THREE;
+  public renderer: WebGLRenderer;
+
+  public scene: Scene | null = null;
   private scenes: Scene[] = [];
+
+  public camera: PerspectiveCamera;
+  public controls: OrbitControls;
+
+  public context = THREE;
   private clock: Clock;
 
-  private animationMixers: AnimationMixer[] = [];
+  private updateEvent: () => void;
+  private resizeEvent: () => void = () => { };
+
+  private brdfRenderTarget: WebGLRenderTarget;
+  private ibl: Ibl | null = null;
+  private iblSpace: IblSpace = IblSpace.World;
 
   public constructor(elementId: string) {
     super();
@@ -43,40 +46,26 @@ export default class Viewer extends EventDispatcher {
 
     this.element = element;
 
-    const { renderer, scene, camera, controls } = init(this.element);
+    const { renderer, camera, controls } = init(this.element);
 
     this.renderer = renderer;
-    this.scene = scene;
-    this.scenes.push(this.scene);
     this.camera = camera;
     this.controls = controls;
 
-    this.buildBrdf();
-  }
+    this.updateEvent = () => {
+      requestAnimationFrame(() => this.update());
+    };
+    this.resizeEvent = () => this.resize();
 
-  public async loadAsset(url: string) {
-    await loadAsset(this.renderer, this.scene, url);
+    this.brdfRenderTarget = buildBrdf(this.renderer, this.camera);
   }
 
   public async loadIbl(irradiancePath: string, radiancePath: string): Promise<void> {
-    const ibl = await loadIbl(irradiancePath, radiancePath);
-    setIblToScene(ibl, this.scene);
+    this.ibl = await loadIbl(irradiancePath, radiancePath);
   }
 
   public setIblSpace(space: IblSpace) {
-    setIblSpace(this.scene, space);
-  }
-
-  public buildBrdf() {
-    this.scene.userData['brdf'] = buildBrdf(this.renderer, this.camera);
-  }
-
-  public addSkybox() {
-    addSkybox(this.scene);
-  }
-
-  public createMaterial(): Material {
-    return createMaterial(this.scene);
+    this.iblSpace = space;
   }
 
   public getScene(name: string): Scene | null {
@@ -88,12 +77,15 @@ export default class Viewer extends EventDispatcher {
   }
 
   public createScene(name: string): Scene {
-    const scene = new Scene();
+    const scene = new Scene(this.renderer);
     scene.name = name;
 
-    scene.userData['brdf'] = this.scene.userData['brdf'];
-    scene.userData['ibl'] = this.scene.userData['ibl'];
-    scene.userData['iblSpace'] = this.scene.userData['iblSpace'];
+    scene.userData['brdf'] = this.brdfRenderTarget.texture;
+    scene.userData['ibl'] = this.ibl;
+    scene.userData['iblSpace'] = this.iblSpace;
+
+    scene.userData['materials'] = new Set();
+    scene.userData['textures'] = new Set();
 
     this.scenes.push(scene);
 
@@ -106,31 +98,6 @@ export default class Viewer extends EventDispatcher {
 
   public setScene(scene: Scene) {
     this.scene = scene;
-  }
-
-  public launch() {
-
-    if (!this.scene.userData['ibl']) {
-      throw new Error('Ibl must be load before launching the viewer');
-    }
-
-    this.addEventListener('updated', () => {
-      requestAnimationFrame(() => this.update());
-    });
-
-    window
-      .addEventListener('resize', () => this.resize(), false)
-
-    this.resize();
-    this.update();
-  }
-
-  public playAllAnimations() {
-    this.animationMixers = playAllAnimations(this.scene);
-  }
-
-  public getAllAnimations(): AnimationMixer[] {
-    return this.animationMixers;
   }
 
   public takeScreenshot() {
@@ -146,20 +113,13 @@ export default class Viewer extends EventDispatcher {
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight);
-    this.render();
+    this.update();
   }
 
-  private render() {
-    this.renderer.render(this.scene, this.camera);
-  }
-
-  private update() {
-    // 1. Update controls
-    this.controls.update();
-
+  private render(scene: Scene) {
     // 2. Update animations
     const delta = this.clock.getDelta();
-    this.scene.dispatchEvent({ type: 'animate', delta });
+    scene.dispatchEvent({ type: 'animate', delta });
 
     // 3. Update preprocesses
     this.dispatchEvent({
@@ -169,8 +129,63 @@ export default class Viewer extends EventDispatcher {
     });
 
     // 4. Update screen
-    this.render();
+    this.renderer.render(scene, this.camera);
+  }
+
+  private update() {
+    // 1. Update controls
+    this.controls.update();
+
+    const scene = this.scene;
+
+    if (scene) {
+      this.render(scene);
+    }
 
     this.dispatchEvent({ type: 'updated' });
+  }
+
+  public launch() {
+    if (!this.ibl) {
+      throw new Error('Ibl must be loaded before launching the viewer');
+    }
+
+    this.addEventListener('updated', this.updateEvent);
+
+    window.addEventListener('resize', this.resizeEvent, false)
+
+    this.resize();
+    this.update();
+  }
+
+  public dispose() {
+    this.removeEventListener('updated', this.updateEvent);
+    window.removeEventListener('resize', this.resizeEvent, false);
+
+    this.brdfRenderTarget.dispose();
+    if (this.ibl) {
+      this.ibl.radiance.dispose();
+      this.ibl.irradiance.dispose();
+    }
+
+    this.scenes.forEach((scene: Scene) => {
+      scene.traverse((object: Object3D) => {
+        if (object.type == 'Mesh') {
+          const mesh: Mesh = object as Mesh;
+          mesh.geometry.dispose();
+        }
+      })
+      scene.userData['materials'].forEach((material: Material) => {
+        material.dispose();
+      })
+      scene.userData['textures'].forEach((texture: Texture) => {
+        texture.dispose();
+      })
+    });
+
+    this.controls.dispose();
+
+    this.element.removeChild(this.renderer.domElement);
+    this.renderer.dispose();
   }
 }

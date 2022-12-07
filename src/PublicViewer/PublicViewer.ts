@@ -1,4 +1,4 @@
-import { AnimationMixer, EventDispatcher } from 'three';
+import { EventDispatcher } from 'three';
 import launchTasks from '../Viewer/launchTasks';
 import type { Tasks } from '../Viewer/Tasks';
 import IblSpace from '../Viewer/textures/IblSpace';
@@ -30,10 +30,6 @@ export default class PublicViewer extends EventDispatcher {
     this.tasks = { parallelTasks: [] };
   }
 
-  public async loadAsset(url: string) {
-    await this.viewer.loadAsset(url);
-  }
-
   public async loadIbl(irradiancePath: string, radiancePath: string): Promise<void> {
     await this.viewer.loadIbl(irradiancePath, radiancePath);
   }
@@ -46,19 +42,11 @@ export default class PublicViewer extends EventDispatcher {
     this.viewer.setIblSpace(IblSpace.World);
   }
 
-  public addSkybox() {
-    this.viewer.addSkybox();
-  }
-
-  public playAllAnimations() {
-    this.viewer.playAllAnimations();
-  }
-
-  public getAllAnimations(): AnimationMixer[] {
-    return this.viewer.getAllAnimations();
-  }
-
   public takeScreenshot() {
     this.viewer.takeScreenshot();
+  }
+
+  public dispose() {
+    this.viewer.dispose();
   }
 }

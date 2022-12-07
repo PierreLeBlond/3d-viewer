@@ -1,6 +1,6 @@
 import { DepthTexture, Matrix4, Mesh, NearestFilter, Object3D, RGBAFormat, WebGLRenderTarget } from 'three';
 import type Material from '../../materials/Material/Material';
-import setIblToScene from '../../textures/setIblToScene';
+import type Scene from '../../Scene/Scene';
 import type Viewer from '../../Viewer';
 
 interface ReflectorOptions {
@@ -13,17 +13,19 @@ export default class Reflector extends Object3D {
 
   private updatePreprocessesEventListener: { ({ camera, renderer }: { camera: any; renderer: any; }): void; (event: THREE.Event & { type: "updatePreprocesses"; } & { target: Viewer; }): void; };
 
-  constructor(viewer: Viewer, target: Mesh, options: ReflectorOptions = {}) {
+  private viewer: Viewer;
+
+  constructor(viewer: Viewer, scene: Scene, target: Mesh, options: ReflectorOptions = {}) {
     super();
+
+    this.viewer = viewer;
 
     const textureWidth = options.textureWidth || 512;
     const textureHeight = options.textureHeight || 512;
 
     const parameters = {
       minFilter: NearestFilter,
-      // minFilter: LinearMipmapLinearFilter,
       magFilter: NearestFilter,
-      // magFilter: LinearFilter,
       format: RGBAFormat
     };
 
@@ -60,16 +62,22 @@ export default class Reflector extends Object3D {
 
       // Rather than modifying the camera, let's put the world upside down !
       // Also we don't forget to rotate the environment accordingly.
-      viewer.scene.scale.set(1.0, -1.0, 1.0);
-      viewer.scene.userData['ibl'].matrix = viewer.scene.matrixWorld;
-      setIblToScene(viewer.scene.userData['ibl'], viewer.scene);
+      scene.scale.set(1.0, -1.0, 1.0);
+      scene.userData['ibl'].matrix = scene.matrixWorld;
+      scene.userData['materials'].forEach((material: Material) => {
+        material.ibl = scene.userData['ibl'];
+      });
 
-      if (renderer.autoClear === false) renderer.clear();
-      renderer.render(viewer.scene, viewer.camera);
+      if (renderer.autoClear === false) {
+        renderer.clear();
+      }
+      renderer.render(scene, viewer.camera);
 
-      viewer.scene.scale.set(1.0, 1.0, 1.0);
-      viewer.scene.userData['ibl'].matrix = viewer.scene.matrixWorld;
-      setIblToScene(viewer.scene.userData['ibl'], viewer.scene);
+      scene.scale.set(1.0, 1.0, 1.0);
+      scene.userData['ibl'].matrix = scene.matrixWorld;
+      scene.userData['materials'].forEach((material: Material) => {
+        material.ibl = scene.userData['ibl'];
+      });
 
       target.visible = true;
 
@@ -80,12 +88,12 @@ export default class Reflector extends Object3D {
     };
   }
 
-  public start(viewer: Viewer) {
-    viewer.addEventListener('updatePreprocesses', this.updatePreprocessesEventListener);
+  public start() {
+    this.viewer.addEventListener('updatePreprocesses', this.updatePreprocessesEventListener);
   }
 
-  public stop(viewer: Viewer) {
-    viewer.removeEventListener('updatePreprocesses', this.updatePreprocessesEventListener);
+  public stop() {
+    this.viewer.removeEventListener('updatePreprocesses', this.updatePreprocessesEventListener);
   }
 
   private assignReflectorToMesh(target: Mesh) {
@@ -96,5 +104,11 @@ export default class Reflector extends Object3D {
 
       material.reflectorMatrix = this.matrixWorld;
     }
+  }
+
+  public dispose() {
+    this.stop();
+    this.renderTarget.depthTexture.dispose();
+    this.renderTarget.dispose();
   }
 }

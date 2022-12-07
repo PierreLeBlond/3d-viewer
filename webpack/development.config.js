@@ -1,4 +1,4 @@
-module.exports = {
+const config = {
   mode: 'development',
 
   chunkFilename: '[name].[chunkhash].js',
@@ -14,12 +14,14 @@ module.exports = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
       'Access-Control-Allow-Headers':
-          'X-Requested-With, content-type, Authorization'
+        'X-Requested-With, content-type, Authorization'
     },
     // Externally reachable
     host: '0.0.0.0',
-    devMiddleware: {writeToDisk: true}
+    devMiddleware: { writeToDisk: true }
   },
 
   publicPath: 'http://localhost:8080/'
 };
+
+export default config;

@@ -1,4 +1,4 @@
-module.exports = {
+const config = {
   mode: 'production',
 
   chunkFilename: '[chunkhash].js',
@@ -6,3 +6,5 @@ module.exports = {
 
   publicPath: 'https://app.pierrelespingal.com/3d-viewer/'
 };
+
+export default config;

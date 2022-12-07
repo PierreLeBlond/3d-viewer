@@ -1,6 +1,6 @@
 import { LinearEncoding, Mesh, MeshPhysicalMaterial, Object3D, Scene, WebGLRenderer } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import createMaterial from './materials/Material/createMaterial';
+import createMaterial from '../materials/Material/createMaterial';
 
 export default async function loadAsset(
   renderer: WebGLRenderer, scene: Scene, url: string) {
@@ -55,6 +55,29 @@ export default async function loadAsset(
       }
 
       mesh.material = material;
+      physicalMaterial.dispose();
     }
   });
+
+  const materials = new Set();
+  const textures = new Set();
+
+  scene.traverse((object: Object3D) => {
+    if (object.type == 'Mesh') {
+      const mesh: Mesh = object as Mesh;
+      mesh.geometry.dispose();
+      const material: MeshPhysicalMaterial = mesh.material as MeshPhysicalMaterial;
+      materials.add(material);
+
+      textures.add(material.map);
+      textures.add(material.normalMap);
+      textures.add(material.roughnessMap);
+      textures.add(material.metalnessMap);
+      textures.add(material.alphaMap);
+      textures.add(material.aoMap);
+    }
+  });
+
+  scene.userData['materials'].add(...materials);
+  scene.userData['textures'].add(...textures);
 }

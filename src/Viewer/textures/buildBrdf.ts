@@ -30,5 +30,9 @@ export default function buildBrdf(renderer: WebGLRenderer, camera: PerspectiveCa
 
     renderer.setRenderTarget(null);
 
-    return renderTarget.texture;
+    // Dispose
+    material.dispose();
+    geometry.dispose();
+
+    return renderTarget;
 }
