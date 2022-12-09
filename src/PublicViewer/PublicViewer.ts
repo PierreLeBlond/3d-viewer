@@ -1,6 +1,6 @@
 import { EventDispatcher } from 'three';
-import launchTasks from '../Viewer/launchTasks';
-import type { Tasks } from '../Viewer/Tasks';
+import launchTasks from './launchTasks';
+import type { Tasks } from './Tasks';
 import IblSpace from '../Viewer/textures/IblSpace';
 import Viewer from '../Viewer/Viewer';
 
