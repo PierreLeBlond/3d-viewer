@@ -227,7 +227,7 @@ export default class Material extends ShaderMaterial {
   }
 
   public vampMeshPhysicalMaterial(material: MeshPhysicalMaterial) {
-    material.color.copy(this.color);
+    this.color.copy(material.color);
     this.map = material.map;
     this.normalMap = material.normalMap;
     this.roughness = material.roughness;
