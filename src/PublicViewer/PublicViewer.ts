@@ -46,6 +46,14 @@ export default class PublicViewer extends EventDispatcher {
     this.viewer.takeScreenshot();
   }
 
+  public pause() {
+    this.viewer.pause();
+  }
+
+  public play() {
+    this.viewer.play();
+  }
+
   public dispose() {
     this.viewer.dispose();
   }

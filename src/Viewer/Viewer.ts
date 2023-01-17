@@ -117,18 +117,14 @@ export default class Viewer extends EventDispatcher {
   }
 
   private render(scene: Scene) {
-    // 2. Update animations
-    const delta = this.clock.getDelta();
-    scene.dispatchEvent({ type: 'animate', delta });
-
-    // 3. Update preprocesses
+    // 1. Update preprocesses
     this.dispatchEvent({
       type: 'updatePreprocesses',
       camera: this.camera,
       renderer: this.renderer
     });
 
-    // 4. Update screen
+    // 2. Update screen
     this.renderer.render(scene, this.camera);
   }
 
@@ -136,13 +132,20 @@ export default class Viewer extends EventDispatcher {
     // 1. Update controls
     this.controls.update();
 
-    const scene = this.scene;
+    this.dispatchEvent({ type: 'updated' });
 
-    if (scene) {
-      this.render(scene);
+    // 2. Nothing to render
+    const scene = this.scene;
+    if (!scene) {
+      return;
     }
 
-    this.dispatchEvent({ type: 'updated' });
+    // 3. Update animations
+    const delta = this.clock.getDelta();
+    scene.dispatchEvent({ type: 'animate', delta });
+
+    // 4. Render the scene
+    this.render(scene);
   }
 
   public launch() {
@@ -150,16 +153,25 @@ export default class Viewer extends EventDispatcher {
       throw new Error('Ibl must be loaded before launching the viewer');
     }
 
-    this.addEventListener('updated', this.updateEvent);
+    this.play();
 
+    // TODO: We are rendering twice, within 'play' and 'resize', avoid this
     window.addEventListener('resize', this.resizeEvent, false)
-
     this.resize();
+  }
+
+  public pause() {
+    this.removeEventListener('updated', this.updateEvent);
+  }
+
+  public play() {
+    this.addEventListener('updated', this.updateEvent);
+    this.clock.getDelta();
     this.update();
   }
 
   public dispose() {
-    this.removeEventListener('updated', this.updateEvent);
+    this.pause();
     window.removeEventListener('resize', this.resizeEvent, false);
 
     this.brdfRenderTarget.dispose();
