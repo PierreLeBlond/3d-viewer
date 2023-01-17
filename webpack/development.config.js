@@ -18,7 +18,7 @@ const config = {
     },
     // Externally reachable
     host: '0.0.0.0',
-    devMiddleware: { writeToDisk: true }
+    writeToDisk: true
   },
 
   publicPath: 'http://localhost:8080/'
