@@ -75,6 +75,7 @@ export default async function loadAsset(
       textures.add(material.metalnessMap);
       textures.add(material.alphaMap);
       textures.add(material.aoMap);
+      textures.add(material.emissiveMap);
     }
   });
 

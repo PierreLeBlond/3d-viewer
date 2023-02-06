@@ -3,6 +3,7 @@
 const float kMaxRadianceLod = 9.0;
 
 uniform vec3 diffuse;
+uniform vec3 emissive;
 uniform float roughness;
 uniform float metalness;
 uniform float opacity;
@@ -24,6 +25,7 @@ varying vec3 vViewPosition;
 #include <alphamap_pars_fragment>
 #include <alphatest_pars_fragment>
 #include <aomap_pars_fragment>
+#include <emissivemap_pars_fragment>
 #include <bsdfs>
 #include <cube_uv_reflection_fragment>
 #include <envmap_common_pars_fragment>
@@ -145,6 +147,7 @@ vec3 GetDielectricMultipleScattering(float n_dot_v, float roughness, vec3 color,
 void main() {
   vec4 diffuseColor = vec4(pow(diffuse, vec3(2.2)), opacity);
   ReflectedLight reflectedLight = ReflectedLight(vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
+  vec3 totalEmissiveRadiance = emissive;
 
   #if defined(USE_MAP)
     vec4 diffuse_color_sample = texture2D(map, vUv);
@@ -157,6 +160,7 @@ void main() {
 #include <metalnessmap_fragment>
 #include <normal_fragment_begin>
 #include <normal_fragment_maps>
+#include <emissivemap_fragment>
 
   // accumulation
 #include <lights_physical_fragment>
@@ -218,7 +222,7 @@ void main() {
 
   vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
   vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
-  vec3 outgoingLight = totalDiffuse + totalSpecular + ambient;
+  vec3 outgoingLight = totalDiffuse + totalSpecular + ambient + totalEmissiveRadiance;
 
 #include <output_fragment>
   gl_FragColor.xyz = toneMap(gl_FragColor.xyz);

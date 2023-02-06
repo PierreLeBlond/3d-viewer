@@ -16,6 +16,8 @@ interface Uniforms {
   alphaMap: { value: Texture | null },
   aoMap: { value: Texture | null },
   aoMapIntensity: { value: number },
+  emissiveMap: { value: Texture | null },
+  emissive: { value: Color },
   envMap: { value: Texture | null },
   radiance_map: { value: Texture | null },
   irradiance_map: { value: Texture | null },
@@ -100,6 +102,19 @@ export default class Material extends ShaderMaterial {
     this.uniforms['aoMapIntensity'].value = aoMapIntensity;
   }
 
+  public get emissiveMap(): Texture | null {
+    return this.uniforms['emissiveMap'].value;
+  };
+  public set emissiveMap(emissiveMap: Texture | null) {
+    this.uniforms['emissiveMap'].value = emissiveMap;
+  }
+  public get emissive(): Color {
+    return this.uniforms['emissive'].value;
+  };
+  public set emissive(emissive: Color) {
+    this.uniforms['emissive'].value = emissive;
+  }
+
   public get envMap(): Texture | null {
     return this.uniforms['envMap'].value;
   };
@@ -167,10 +182,12 @@ export default class Material extends ShaderMaterial {
     const uniforms: Uniforms = UniformsUtils.merge([
       UniformsLib.common, UniformsLib.envmap, UniformsLib.roughnessmap,
       UniformsLib.metalnessmap, UniformsLib.normalmap, UniformsLib.aomap,
+      UniformsLib.emissivemap,
       UniformsLib.lights, {
         envMapIntensity: { value: 1 },
         roughness: { value: 1.0 },
         metalness: { value: 1.0 },
+        emissive: { value: new Color(0x000000) },
         radiance_map: { value: null },
         irradiance_map: { value: null },
         ibl_matrix: { value: new Matrix4() },
@@ -237,5 +254,7 @@ export default class Material extends ShaderMaterial {
     this.alphaMap = material.alphaMap;
     this.aoMap = material.aoMap;
     this.aoMapIntensity = material.aoMapIntensity;
+    this.emissiveMap = material.emissiveMap;
+    this.emissive.copy(material.emissive);
   }
 }
