@@ -3,6 +3,7 @@ import launchTasks from './launchTasks';
 import type { Tasks } from './Tasks';
 import IblSpace from '../Viewer/textures/IblSpace';
 import Viewer from '../Viewer/Viewer';
+import type { DisolveObjectOptions } from '../Viewer/objects/disolve/disolveObject';
 
 export default class PublicViewer extends EventDispatcher {
   private tasks: Tasks = { parallelTasks: [] };
@@ -52,6 +53,14 @@ export default class PublicViewer extends EventDispatcher {
 
   public play() {
     this.viewer.play();
+  }
+
+  public async disolveObjectByName(name: string, options: DisolveObjectOptions) {
+    await this.viewer.disolveObjectByName(name, options);
+  }
+
+  public async resolveObjectByName(name: string, options: DisolveObjectOptions) {
+    await this.viewer.resolveObjectByName(name, options);
   }
 
   public dispose() {

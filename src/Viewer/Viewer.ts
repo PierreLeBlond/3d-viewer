@@ -8,6 +8,8 @@ import IblSpace from './textures/IblSpace';
 import loadIbl from './textures/loadIbl';
 import type Ibl from './textures/Ibl';
 import Scene from './Scene/Scene';
+import { disolveObject, type DisolveObjectOptions } from './objects/disolve/disolveObject';
+import { resolveObject } from './objects/disolve/resolveObject';
 
 export default class Viewer extends EventDispatcher {
   public element: HTMLElement;
@@ -168,6 +170,36 @@ export default class Viewer extends EventDispatcher {
     this.addEventListener('updated', this.updateEvent);
     this.clock.getDelta();
     this.update();
+  }
+
+  public async disolveObject(object: Object3D, options: DisolveObjectOptions) {
+    await disolveObject(this, object, options);
+  }
+
+  public async disolveObjectByName(name: string, options: DisolveObjectOptions) {
+    if (!this.scene) {
+      throw new Error('No active scene in viewer')
+    }
+    const object = this.scene.getObjectByName(name);
+    if (!object) {
+      throw new Error(`Object with name ${name} does not exists`);
+    }
+    await this.disolveObject(object, options);
+  }
+
+  public async resolveObject(object: Object3D, options: DisolveObjectOptions) {
+    await resolveObject(this, object, options);
+  }
+
+  public async resolveObjectByName(name: string, options: DisolveObjectOptions) {
+    if (!this.scene) {
+      throw new Error('No active scene in viewer')
+    }
+    const object = this.scene.getObjectByName(name);
+    if (!object) {
+      throw new Error(`Object with name ${name} does not exists`);
+    }
+    await this.resolveObject(object, options);
   }
 
   public dispose() {
