@@ -1,7 +1,6 @@
-import { BufferGeometry, Color, Mesh, MeshBasicMaterial, type Object3D } from "three";
+import { BufferGeometry, Mesh, MeshBasicMaterial, type Object3D } from "three";
 
 const wireframeMaterial = new MeshBasicMaterial({
-  color: new Color(0x00ff00),
   wireframe: true
 });
 
@@ -13,7 +12,7 @@ export const getDisolveData = (object: Object3D) => {
   }[] = [];
 
   object.traverse((children: Object3D) => {
-    if (children.type != 'Mesh') {
+    if (children.type != 'Mesh' && children.type != 'SkinnedMesh') {
       return;
     }
 

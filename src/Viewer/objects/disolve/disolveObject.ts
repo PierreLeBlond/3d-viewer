@@ -1,13 +1,15 @@
-import type { Object3D } from "three";
+import { Color, MeshBasicMaterial, type Object3D } from "three";
 import type Viewer from "../../Viewer";
 import { getDisolveData } from "./getDisolveData";
 
 const DELAY = 1;
 const DURATION = 3;
+const COLOR = new Color(0x00ff00);
 
 export interface DisolveObjectOptions {
   delay?: number,
-  duration?: number
+  duration?: number,
+  color?: string
 };
 
 export const disolveObject = async (viewer: Viewer, object: Object3D, options: DisolveObjectOptions) => {
@@ -20,6 +22,7 @@ export const disolveObject = async (viewer: Viewer, object: Object3D, options: D
 
   const delay = options.delay ?? DELAY;
   const duration = options.duration ?? DURATION;
+  const color = options.color ? new Color(options.color) : COLOR;
 
   const meshDatas = getDisolveData(object);
 
@@ -52,7 +55,11 @@ export const disolveObject = async (viewer: Viewer, object: Object3D, options: D
 
     meshDatas.forEach(({ mesh, wireframeMesh }) => {
       wireframeMesh.visible = true;
+      const material = wireframeMesh.material as MeshBasicMaterial;
+      material.color = color;
       mesh.visible = true;
     });
+
+    object.visible = true;
   });
 }
