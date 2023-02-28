@@ -16,7 +16,7 @@ export default class Viewer extends EventDispatcher {
 
   public renderer: WebGLRenderer;
 
-  public scene: Scene | null = null;
+  public scene: Scene;
   private scenes: Scene[] = [];
 
   public camera: PerspectiveCamera;
@@ -25,6 +25,7 @@ export default class Viewer extends EventDispatcher {
   public context = THREE;
   private clock: Clock;
 
+  private animationFrameHandle = -1;
   private updateEvent: () => void;
   private resizeEvent: () => void = () => { };
 
@@ -60,6 +61,8 @@ export default class Viewer extends EventDispatcher {
     this.resizeEvent = () => this.resize();
 
     this.brdfRenderTarget = buildBrdf(this.renderer, this.camera);
+
+    this.scene = this.createScene('default');
   }
 
   public async loadIbl(irradiancePath: string, radiancePath: string): Promise<void> {
@@ -136,39 +139,35 @@ export default class Viewer extends EventDispatcher {
 
     this.dispatchEvent({ type: 'updated' });
 
-    // 2. Nothing to render
-    const scene = this.scene;
-    if (!scene) {
-      return;
-    }
-
     // 3. Update animations
     const delta = this.clock.getDelta();
-    scene.dispatchEvent({ type: 'animate', delta });
+    this.scene.dispatchEvent({ type: 'animate', delta });
 
     // 4. Render the scene
-    this.render(scene);
+    this.render(this.scene);
+  }
+
+  // Enable looping behaviour but does not actually call the render loop
+  private activateRenderLoop() {
+    this.addEventListener('updated', this.updateEvent);
+    this.clock.getDelta();
   }
 
   public launch() {
-    if (!this.ibl) {
-      throw new Error('Ibl must be loaded before launching the viewer');
-    }
+    this.activateRenderLoop();
 
-    this.play();
-
-    // TODO: We are rendering twice, within 'play' and 'resize', avoid this
-    window.addEventListener('resize', this.resizeEvent, false)
+    // Resize will trigger update
+    window.addEventListener('resize', this.resizeEvent, false);
     this.resize();
   }
 
   public pause() {
     this.removeEventListener('updated', this.updateEvent);
+    cancelAnimationFrame(this.animationFrameHandle);
   }
 
   public play() {
-    this.addEventListener('updated', this.updateEvent);
-    this.clock.getDelta();
+    this.activateRenderLoop();
     this.update();
   }
 
