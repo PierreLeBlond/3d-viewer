@@ -229,6 +229,12 @@ export default class Material extends ShaderMaterial {
       delete this.defines['REFLECTOR'];
     }
 
+    if (this.scene.userData['ibl']) {
+      this.defines['IBL'] = '';
+    } else {
+      delete this.defines['IBL'];
+    }
+
     if (this.scene.userData['iblSpace'] == IblSpace.View) {
       this.defines['IBL_IN_VIEW_SPACE'] = '';
     } else {
@@ -238,9 +244,10 @@ export default class Material extends ShaderMaterial {
 
   public override customProgramCacheKey(): string {
     const reflectorCacheKey = !!this.reflectorMap ? 'reflector' : '';
+    const iblCacheKey = this.scene.userData['ibl'] ? 'ibl' : '';
     const iblInViewSpaceCacheKey =
       this.scene.userData['iblSpace'] == IblSpace.View ? 'iblInViewSpace' : '';
-    return `${reflectorCacheKey}${iblInViewSpaceCacheKey}`;
+    return `${reflectorCacheKey}${iblCacheKey}${iblInViewSpaceCacheKey}`;
   }
 
   public vampMeshPhysicalMaterial(material: MeshPhysicalMaterial) {

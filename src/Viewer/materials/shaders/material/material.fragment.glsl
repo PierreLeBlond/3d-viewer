@@ -166,7 +166,9 @@ void main() {
 #include <lights_physical_fragment>
 #include <lights_fragment_begin>
 
-  // ibl
+vec3 ambient = vec3(0.0);
+
+#if defined(IBL)
   vec3 world_normal = inverseTransformDirection(normal, viewMatrix);
   vec3 view_vector = normalize(cameraPosition - world_position_out.xyz);
 
@@ -194,35 +196,37 @@ void main() {
   vec3 upperRadianceSample = RGBDToHDR(textureCubeLodEXT(radiance_map, reflection_vector, upperLevel));
   radiance = mix(lowerRadianceSample, upperRadianceSample, (roughnessFactor * kMaxRadianceLod - lowerLevel));
 
-#if defined(REFLECTOR)
-  vec4 positionClip = projectionMatrix*viewMatrix*world_position_out;
-  vec3 positionNDC = positionClip.xyz / positionClip.w;
-  vec2 uv = positionNDC.xy*0.5 + 0.5;
+  #if defined(REFLECTOR)
+    vec4 positionClip = projectionMatrix*viewMatrix*world_position_out;
+    vec3 positionNDC = positionClip.xyz / positionClip.w;
+    vec2 uv = positionNDC.xy*0.5 + 0.5;
 
-  vec4 reflectorNormal = reflectorMatrix*vec4(0.0, 0.0, 1.0, 0.0);
-  float orientationFactor = step(0.0, dot(reflectorNormal.xyz, normal));
+    vec4 reflectorNormal = reflectorMatrix*vec4(0.0, 0.0, 1.0, 0.0);
+    float orientationFactor = step(0.0, dot(reflectorNormal.xyz, normal));
 
-  float reflectorDepth = texture2D(reflectorDepthMap, uv).x;
+    float reflectorDepth = texture2D(reflectorDepthMap, uv).x;
 
-  vec4 reflectorTexel = texture2D(reflectorMap, uv);
+    vec4 reflectorTexel = texture2D(reflectorMap, uv);
 
-  reflectorTexel.rgb = pow(reflectorTexel.rgb, vec3(2.2));
-  reflectorTexel.rgb = untoneMap(reflectorTexel.rgb);
+    reflectorTexel.rgb = pow(reflectorTexel.rgb, vec3(2.2));
+    reflectorTexel.rgb = untoneMap(reflectorTexel.rgb);
 
-  radiance = mix(radiance, reflectorTexel.rgb, orientationFactor*(1.0 - step(1.0, reflectorDepth)));
-#endif
+    radiance = mix(radiance, reflectorTexel.rgb, orientationFactor*(1.0 - step(1.0, reflectorDepth)));
+  #endif
 
-  vec3 ambient = mix(GetDielectricMultipleScattering(n_dot_v, roughnessFactor, diffuseColor.rgb, irradiance, radiance),
+  ambient = mix(GetDielectricMultipleScattering(n_dot_v, roughnessFactor, diffuseColor.rgb, irradiance, radiance),
                      GetConductorMultipleScattering(n_dot_v, roughnessFactor, diffuseColor.rgb, irradiance, radiance), metalnessFactor);
+
+#endif
 
 #if defined(USE_AOMAP)
     vec3 occlusion = texture2D(aoMap, vUv2).rgb;
     ambient *= occlusion;
 #endif
 
-  vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
-  vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
-  vec3 outgoingLight = totalDiffuse + totalSpecular + ambient + totalEmissiveRadiance;
+vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
+vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
+vec3 outgoingLight = totalDiffuse + totalSpecular + ambient + totalEmissiveRadiance;
 
 #include <output_fragment>
   gl_FragColor.xyz = toneMap(gl_FragColor.xyz);
