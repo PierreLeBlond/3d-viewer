@@ -9,7 +9,7 @@ const COLOR = new Color(0x00ff00);
 export interface ResolveObjectOptions {
   delay?: number,
   duration?: number,
-  color?: string
+  color?: string | number
 };
 
 export const resolveObject = async (viewer: Viewer, object: Object3D, options: ResolveObjectOptions) => {
