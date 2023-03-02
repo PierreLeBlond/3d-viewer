@@ -3,16 +3,16 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import createMaterial from '../materials/Material/createMaterial';
 
 export default async function loadAsset(
-  renderer: WebGLRenderer, scene: Scene, url: string) {
+  renderer: WebGLRenderer, scene: Scene, url: string, optionalResourcePath?: string) {
   const gltfLoader = new GLTFLoader();
 
-  const baseUrl = url.match(/(?<base>.+\/)(?:\w|\.)+/)?.groups?.['base'];
+  const resourcePath = optionalResourcePath || url.match(/(?<base>.+\/)(?:\w|\.)+/)?.groups?.['base'];
 
-  if (!baseUrl) {
+  if (!resourcePath) {
     throw new Error(`couldn't find asset base url from ${url}`);
   }
 
-  gltfLoader.resourcePath = baseUrl;
+  gltfLoader.resourcePath = resourcePath;
 
   const asset = await gltfLoader.loadAsync(url);
   asset.scene.name = 'main';

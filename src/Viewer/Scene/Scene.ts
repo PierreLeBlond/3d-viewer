@@ -17,8 +17,8 @@ export default class Scene extends ThreeScene {
     this.renderer = renderer;
   }
 
-  public async loadAsset(url: string) {
-    await loadAsset(this.renderer, this, url);
+  public async loadAsset(url: string, optionalResourcePath?: string) {
+    await loadAsset(this.renderer, this, url, optionalResourcePath);
   }
 
   public addSkybox() {
