@@ -21,6 +21,7 @@ export default class Viewer extends EventDispatcher {
 
   public camera: PerspectiveCamera;
   public controls: OrbitControls;
+  public fov: number = 75;
 
   public context = THREE;
   private clock: Clock;
@@ -116,6 +117,10 @@ export default class Viewer extends EventDispatcher {
     }
     const { clientWidth, clientHeight } = parentElement;
     this.camera.aspect = clientWidth / clientHeight;
+    const isHorizontal = this.camera.aspect <= 1;
+    this.camera.fov = isHorizontal
+      ? Math.atan(Math.tan(this.fov * Math.PI / 360) / this.camera.aspect) * 360 / Math.PI
+      : this.fov;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight);
     this.update();
