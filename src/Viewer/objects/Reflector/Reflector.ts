@@ -1,4 +1,4 @@
-import { DepthTexture, Matrix4, Mesh, NearestFilter, Object3D, RGBAFormat, WebGLRenderTarget } from 'three';
+import { DepthTexture, Event, Matrix4, Mesh, NearestFilter, Object3D, RGBAFormat, WebGLRenderTarget } from 'three';
 import type Material from '../../materials/Material/Material';
 import type Scene from '../../Scene/Scene';
 import type Viewer from '../../Viewer';
@@ -11,7 +11,7 @@ export default class Reflector extends Object3D {
   public reflectorMatrix: Matrix4 = new Matrix4();
   public renderTarget: WebGLRenderTarget;
 
-  private updatePreprocessesEventListener: { ({ camera, renderer }: { camera: any; renderer: any; }): void; (event: THREE.Event & { type: "updatePreprocesses"; } & { target: Viewer; }): void; };
+  private updatePreprocessesEventListener;
 
   private viewer: Viewer;
 
@@ -40,9 +40,10 @@ export default class Reflector extends Object3D {
       this.assignReflectorToMesh(child as Mesh)
     });
 
-    this.updatePreprocessesEventListener = ({ renderer }) => {
+    this.updatePreprocessesEventListener = (event: Event) => {
+      const { renderer } = event;
       // Render
-      this.renderTarget.texture.encoding = renderer.outputEncoding;
+      this.renderTarget.texture.colorSpace = renderer.outputColorSpace;
 
       const currentRenderTarget = renderer.getRenderTarget();
 

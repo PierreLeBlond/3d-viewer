@@ -20,7 +20,6 @@ varying vec3 vViewPosition;
 #include <dithering_pars_fragment>
 #include <color_pars_fragment>
 #include <uv_pars_fragment>
-#include <uv2_pars_fragment>
 #include <map_pars_fragment>
 #include <alphamap_pars_fragment>
 #include <alphatest_pars_fragment>
@@ -150,7 +149,7 @@ void main() {
   vec3 totalEmissiveRadiance = emissive;
 
   #if defined(USE_MAP)
-    vec4 diffuse_color_sample = texture2D(map, vUv);
+    vec4 diffuse_color_sample = texture2D(map, vMapUv);
     diffuseColor *= pow(diffuse_color_sample, vec4(2.2));
   #endif
 
@@ -220,7 +219,7 @@ vec3 ambient = vec3(0.0);
 #endif
 
 #if defined(USE_AOMAP)
-  vec3 occlusion = texture2D(aoMap, vUv2).rgb;
+  vec3 occlusion = texture2D(aoMap, vAoMapUv).rgb;
   ambient *= occlusion;
 #endif
 
@@ -228,7 +227,7 @@ vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffus
 vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
 vec3 outgoingLight = totalDiffuse + totalSpecular + ambient + totalEmissiveRadiance;
 
-#include <output_fragment>
+#include <opaque_fragment>
 gl_FragColor.xyz = toneMap(gl_FragColor.xyz);
 gl_FragColor.xyz = pow(gl_FragColor.xyz, vec3(1.0/2.2));
 #include <premultiplied_alpha_fragment>

@@ -1,4 +1,4 @@
-import { LinearEncoding, Mesh, MeshPhysicalMaterial, Object3D, Scene, WebGLRenderer } from 'three';
+import { LinearSRGBColorSpace, Mesh, MeshPhysicalMaterial, Object3D, Scene, WebGLRenderer } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import createMaterial from '../materials/Material/createMaterial';
 
@@ -46,12 +46,16 @@ export default async function loadAsset(
 
       if (material.map != null) {
         // We do our own decoding within fragment shader
-        material.map.encoding = LinearEncoding;
+        material.map.colorSpace = LinearSRGBColorSpace;
       }
 
       if (material.normalMap != null) {
         material.normalMap.anisotropy =
           renderer.capabilities.getMaxAnisotropy();
+      }
+
+      if (material.aoMap != null) {
+        material.aoMap.channel = 1;
       }
 
       mesh.material = material;

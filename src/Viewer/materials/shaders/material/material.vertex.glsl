@@ -6,7 +6,6 @@ varying vec3 world_normal_out;
 
 #include <common>
 #include <uv_pars_vertex>
-#include <uv2_pars_vertex>
 #include <color_pars_vertex>
 #include <normal_pars_vertex>
 #include <skinning_pars_vertex>
@@ -19,7 +18,6 @@ uniform mat4 reflectorProjectionMatrix;
 void main() {
 
 #include <uv_vertex>
-#include <uv2_vertex>
 #include <color_vertex>
 #include <beginnormal_vertex>
 #include <skinbase_vertex>
