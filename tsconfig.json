@@ -38,7 +38,7 @@
     "allowUmdGlobalAccess": false,
     // "baseUrl": "",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noResolve": false,
     "resolveJsonModule": true,
     "newLine": "lf",

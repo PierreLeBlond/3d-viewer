@@ -10,25 +10,29 @@
     "node": ">=14.17.0"
   },
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "NODE_ENV=production webpack --config ./webpack/config.js",
     "dev": "NODE_ENV=development webpack serve --config ./webpack/config.js",
+    "check": "tsc",
     "deploy": "npm run build && np",
     "test": "echo \"No test specified\""
   },
   "author": "PierreLeBlond",
   "license": "ISC",
   "devDependencies": {
-    "@types/three": "^0.149.0",
-    "three": "^0.150.1",
+    "three": "^0.155.0",
     "file-loader": "^6.2.0",
-    "ts-loader": "^9.4.2",
-    "typescript": "^5.0.2",
-    "webpack": "^5.76.2",
-    "webpack-bundle-analyzer": "^4.8.0",
-    "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.13.1",
+    "ts-loader": "^9.4.4",
+    "typescript": "^5.1.6",
+    "webpack": "^5.88.2",
+    "webpack-bundle-analyzer": "^4.9.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1",
     "webpack-glsl-loader": "^1.0.1",
-    "webpack-merge": "^5.8.0"
+    "webpack-merge": "^5.9.0"
+  },
+  "dependencies": {
+    "@types/three": "^0.155.0"
   }
 }
