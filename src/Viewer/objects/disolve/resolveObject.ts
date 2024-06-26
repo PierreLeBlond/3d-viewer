@@ -7,17 +7,20 @@ const DURATION = 3;
 const COLOR = new Color(0x00ff00);
 
 export interface ResolveObjectOptions {
-  delay?: number,
-  duration?: number,
-  color?: string | number
-};
+  delay?: number;
+  duration?: number;
+  color?: string | number;
+}
 
-export const resolveObject = async (viewer: Viewer, object: Object3D, options: ResolveObjectOptions) => {
-
+export const resolveObject = async (
+  viewer: Viewer,
+  object: Object3D,
+  options: ResolveObjectOptions
+) => {
   const { scene } = viewer;
 
   if (!scene) {
-    throw new Error('Viewer must have a scene');
+    throw new Error("Viewer must have a scene");
   }
 
   const delay = options.delay ?? DELAY;
@@ -29,8 +32,8 @@ export const resolveObject = async (viewer: Viewer, object: Object3D, options: R
   let time = duration + delay;
 
   return new Promise<void>((resolve) => {
-    const addDisolveStep = (event: { [x: string]: number; }) => {
-      time -= event['delta'] as number;
+    const addDisolveStep = (event: { delta: number }) => {
+      time -= event["delta"];
       const wireframeScale = Math.min(1, time / duration);
       const hiddenScale = Math.max(0, (time - delay) / duration);
 
@@ -38,19 +41,24 @@ export const resolveObject = async (viewer: Viewer, object: Object3D, options: R
         const faceIndex = Math.trunc(wireframeScale * faceCount);
         const hiddenFaceIndex = Math.trunc(hiddenScale * faceCount);
         mesh.geometry.setDrawRange(faceIndex * 3, (faceCount - faceIndex) * 3);
-        wireframeMesh.geometry.setDrawRange(hiddenFaceIndex * 3, (faceIndex - hiddenFaceIndex) * 3);
-      })
+        wireframeMesh.geometry.setDrawRange(
+          hiddenFaceIndex * 3,
+          (faceIndex - hiddenFaceIndex) * 3
+        );
+      });
 
       if (time < 0) {
         meshDatas.forEach(({ wireframeMesh }) => {
           wireframeMesh.visible = false;
         });
-        scene.removeEventListener('animate', addDisolveStep);
+        scene
+          .getEventDispatcher()
+          .removeEventListener("animate", addDisolveStep);
         resolve();
       }
-    }
+    };
 
-    scene.addEventListener('animate', addDisolveStep);
+    scene.getEventDispatcher().addEventListener("animate", addDisolveStep);
 
     meshDatas.forEach(({ mesh, wireframeMesh }) => {
       wireframeMesh.visible = true;
@@ -61,4 +69,4 @@ export const resolveObject = async (viewer: Viewer, object: Object3D, options: R
 
     object.visible = true;
   });
-}
+};

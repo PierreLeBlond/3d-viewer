@@ -1,10 +1,21 @@
-import { DepthTexture, Event, Matrix4, Mesh, NearestFilter, Object3D, RGBAFormat, WebGLRenderTarget } from 'three';
-import type Material from '../../materials/Material/Material';
-import type Scene from '../../Scene/Scene';
-import type Viewer from '../../Viewer';
+import {
+  DepthTexture,
+  Matrix4,
+  Mesh,
+  NearestFilter,
+  Object3D,
+  RGBAFormat,
+  WebGLRenderTarget,
+  WebGLRenderer,
+} from "three";
+import type Material from "../../materials/Material/Material";
+import type Scene from "../../Scene/Scene";
+import type Viewer from "../../Viewer";
 
 interface ReflectorOptions {
-  textureWidth?: number, textureHeight?: number, shader?: number,
+  textureWidth?: number;
+  textureHeight?: number;
+  shader?: number;
 }
 
 export default class Reflector extends Object3D {
@@ -15,7 +26,12 @@ export default class Reflector extends Object3D {
 
   private viewer: Viewer;
 
-  constructor(viewer: Viewer, scene: Scene, target: Mesh, options: ReflectorOptions = {}) {
+  constructor(
+    viewer: Viewer,
+    scene: Scene,
+    target: Mesh,
+    options: ReflectorOptions = {}
+  ) {
     super();
 
     this.viewer = viewer;
@@ -26,22 +42,28 @@ export default class Reflector extends Object3D {
     const parameters = {
       minFilter: NearestFilter,
       magFilter: NearestFilter,
-      format: RGBAFormat
+      format: RGBAFormat,
     };
 
-    this.renderTarget =
-      new WebGLRenderTarget(textureWidth, textureHeight, parameters);
+    this.renderTarget = new WebGLRenderTarget(
+      textureWidth,
+      textureHeight,
+      parameters
+    );
     this.renderTarget.texture.generateMipmaps = true;
 
     this.renderTarget.depthTexture = new DepthTexture(1024, 1024);
 
     this.assignReflectorToMesh(target);
     target.traverse((child: Object3D) => {
-      this.assignReflectorToMesh(child as Mesh)
+      this.assignReflectorToMesh(child as Mesh);
     });
 
-    this.updatePreprocessesEventListener = (event: Event) => {
-      const { renderer } = event;
+    this.updatePreprocessesEventListener = ({
+      renderer,
+    }: {
+      renderer: WebGLRenderer;
+    }) => {
       // Render
       this.renderTarget.texture.colorSpace = renderer.outputColorSpace;
 
@@ -50,13 +72,12 @@ export default class Reflector extends Object3D {
       const currentXrEnabled = renderer.xr.enabled;
       const currentShadowAutoUpdate = renderer.shadowMap.autoUpdate;
 
-      renderer.xr.enabled = false;            // Avoid camera modification
-      renderer.shadowMap.autoUpdate = false;  // Avoid re-computing shadows
+      renderer.xr.enabled = false; // Avoid camera modification
+      renderer.shadowMap.autoUpdate = false; // Avoid re-computing shadows
 
       renderer.setRenderTarget(this.renderTarget);
 
-      renderer.state.buffers.depth.setMask(
-        true);  // make sure the depth buffer is writable so it can be
+      renderer.state.buffers.depth.setMask(true); // make sure the depth buffer is writable so it can be
       // properly cleared, see #18897
 
       target.visible = false;
@@ -64,9 +85,9 @@ export default class Reflector extends Object3D {
       // Rather than modifying the camera, let's put the world upside down !
       // Also we don't forget to rotate the environment accordingly.
       scene.scale.set(1.0, -1.0, 1.0);
-      scene.userData['ibl'].matrix = scene.matrixWorld;
-      scene.userData['materials'].forEach((material: Material) => {
-        material.ibl = scene.userData['ibl'];
+      scene.userData["ibl"].matrix = scene.matrixWorld;
+      scene.userData["materials"].forEach((material: Material) => {
+        material.ibl = scene.userData["ibl"];
       });
 
       if (renderer.autoClear === false) {
@@ -75,9 +96,9 @@ export default class Reflector extends Object3D {
       renderer.render(scene, viewer.camera);
 
       scene.scale.set(1.0, 1.0, 1.0);
-      scene.userData['ibl'].matrix = scene.matrixWorld;
-      scene.userData['materials'].forEach((material: Material) => {
-        material.ibl = scene.userData['ibl'];
+      scene.userData["ibl"].matrix = scene.matrixWorld;
+      scene.userData["materials"].forEach((material: Material) => {
+        material.ibl = scene.userData["ibl"];
       });
 
       target.visible = true;
@@ -90,11 +111,21 @@ export default class Reflector extends Object3D {
   }
 
   public start() {
-    this.viewer.addEventListener('updatePreprocesses', this.updatePreprocessesEventListener);
+    this.viewer
+      .getEventDispatcher()
+      .addEventListener(
+        "updatePreprocesses",
+        this.updatePreprocessesEventListener
+      );
   }
 
   public stop() {
-    this.viewer.removeEventListener('updatePreprocesses', this.updatePreprocessesEventListener);
+    this.viewer
+      .getEventDispatcher()
+      .removeEventListener(
+        "updatePreprocesses",
+        this.updatePreprocessesEventListener
+      );
   }
 
   private assignReflectorToMesh(target: Mesh) {
@@ -109,7 +140,7 @@ export default class Reflector extends Object3D {
 
   public dispose() {
     this.stop();
-    this.renderTarget.depthTexture.dispose();
+    this.renderTarget.depthTexture?.dispose();
     this.renderTarget.dispose();
   }
 }

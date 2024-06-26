@@ -1,16 +1,14 @@
-import { EventDispatcher } from 'three';
-import launchTasks from './launchTasks';
-import type { Tasks } from './Tasks';
-import IblSpace from '../Viewer/textures/IblSpace';
-import Viewer from '../Viewer/Viewer';
-import type { DisolveObjectOptions } from '../Viewer/objects/disolve/disolveObject';
+import launchTasks from "./launchTasks";
+import type { Tasks } from "./Tasks";
+import IblSpace from "../Viewer/textures/IblSpace";
+import Viewer from "../Viewer/Viewer";
+import type { DisolveObjectOptions } from "../Viewer/objects/disolve/disolveObject";
 
-export default class PublicViewer extends EventDispatcher {
+export default class PublicViewer {
   private tasks: Tasks = { parallelTasks: [] };
   public viewer: Viewer;
 
   constructor(elementId: string) {
-    super();
     this.viewer = new Viewer(elementId);
   }
 
@@ -31,7 +29,10 @@ export default class PublicViewer extends EventDispatcher {
     this.tasks = { parallelTasks: [] };
   }
 
-  public async loadIbl(irradiancePath: string, radiancePath: string): Promise<void> {
+  public async loadIbl(
+    irradiancePath: string,
+    radiancePath: string
+  ): Promise<void> {
     await this.viewer.loadIbl(irradiancePath, radiancePath);
   }
 
@@ -55,15 +56,25 @@ export default class PublicViewer extends EventDispatcher {
     this.viewer.play();
   }
 
-  public async disolveObjectByName(name: string, options: DisolveObjectOptions) {
+  public async disolveObjectByName(
+    name: string,
+    options: DisolveObjectOptions
+  ) {
     await this.viewer.disolveObjectByName(name, options);
   }
 
-  public async resolveObjectByName(name: string, options: DisolveObjectOptions) {
+  public async resolveObjectByName(
+    name: string,
+    options: DisolveObjectOptions
+  ) {
     await this.viewer.resolveObjectByName(name, options);
   }
 
   public dispose() {
     this.viewer.dispose();
+  }
+
+  public getEventDispatcher() {
+    return this.viewer.getEventDispatcher();
   }
 }

@@ -1,17 +1,39 @@
-import { Clock, EventDispatcher, Material, Mesh, Object3D, PerspectiveCamera, Texture, WebGLRenderer, WebGLRenderTarget } from 'three';
-import * as THREE from 'three';
-import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import init from './init';
-import takeScreenshot from './renderer/takescreenshot';
-import buildBrdf from './textures/buildBrdf';
-import IblSpace from './textures/IblSpace';
-import loadIbl from './textures/loadIbl';
-import type Ibl from './textures/Ibl';
-import Scene from './Scene/Scene';
-import { disolveObject, type DisolveObjectOptions } from './objects/disolve/disolveObject';
-import { resolveObject } from './objects/disolve/resolveObject';
+import {
+  Clock,
+  EventDispatcher,
+  Material,
+  Mesh,
+  Object3D,
+  PerspectiveCamera,
+  Texture,
+  WebGLRenderer,
+  WebGLRenderTarget,
+} from "three";
+import * as THREE from "three";
+import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import init from "./init";
+import takeScreenshot from "./renderer/takescreenshot";
+import buildBrdf from "./textures/buildBrdf";
+import IblSpace from "./textures/IblSpace";
+import loadIbl from "./textures/loadIbl";
+import type Ibl from "./textures/Ibl";
+import Scene from "./Scene/Scene";
+import {
+  disolveObject,
+  type DisolveObjectOptions,
+} from "./objects/disolve/disolveObject";
+import { resolveObject } from "./objects/disolve/resolveObject";
 
-export default class Viewer extends EventDispatcher {
+export type ViewerEvent = {
+  taskCompleted: { progression?: number };
+  updated: { progression?: number };
+  updatePreprocesses: {
+    camera: PerspectiveCamera;
+    renderer: WebGLRenderer;
+  };
+};
+
+export default class Viewer {
   public element: HTMLElement;
 
   public renderer: WebGLRenderer;
@@ -28,24 +50,25 @@ export default class Viewer extends EventDispatcher {
 
   private animationFrameHandle = -1;
   private updateEvent: () => void;
-  private resizeEvent: () => void = () => { };
+  private resizeEvent: () => void = () => {};
 
   private brdfRenderTarget: WebGLRenderTarget;
   private ibl: Ibl | null = null;
   private iblSpace: IblSpace = IblSpace.World;
 
+  private eventDispatcher = new EventDispatcher<ViewerEvent>();
+
   public constructor(elementId: string) {
-    super();
     this.clock = new Clock();
 
     if (!elementId) {
-      throw new Error('init: element id required');
+      throw new Error("init: element id required");
     }
 
     const element = document.getElementById(elementId);
 
     if (!element) {
-      throw new Error('init: element not found');
+      throw new Error("init: element not found");
     }
 
     this.element = element;
@@ -63,10 +86,13 @@ export default class Viewer extends EventDispatcher {
 
     this.brdfRenderTarget = buildBrdf(this.renderer, this.camera);
 
-    this.scene = this.createScene('default');
+    this.scene = this.createScene("default");
   }
 
-  public async loadIbl(irradiancePath: string, radiancePath: string): Promise<void> {
+  public async loadIbl(
+    irradiancePath: string,
+    radiancePath: string
+  ): Promise<void> {
     this.ibl = await loadIbl(irradiancePath, radiancePath);
   }
 
@@ -86,12 +112,12 @@ export default class Viewer extends EventDispatcher {
     const scene = new Scene(this.renderer);
     scene.name = name;
 
-    scene.userData['brdf'] = this.brdfRenderTarget.texture;
-    scene.userData['ibl'] = this.ibl;
-    scene.userData['iblSpace'] = this.iblSpace;
+    scene.userData["brdf"] = this.brdfRenderTarget.texture;
+    scene.userData["ibl"] = this.ibl;
+    scene.userData["iblSpace"] = this.iblSpace;
 
-    scene.userData['materials'] = new Set();
-    scene.userData['textures'] = new Set();
+    scene.userData["materials"] = new Set();
+    scene.userData["textures"] = new Set();
 
     this.scenes.push(scene);
 
@@ -113,13 +139,15 @@ export default class Viewer extends EventDispatcher {
   private resize() {
     const { parentElement } = this.renderer.domElement;
     if (!parentElement) {
-      throw new Error('dom element has no parent');
+      throw new Error("dom element has no parent");
     }
     const { clientWidth, clientHeight } = parentElement;
     this.camera.aspect = clientWidth / clientHeight;
     const isHorizontal = this.camera.aspect <= 1;
     this.camera.fov = isHorizontal
-      ? Math.atan(Math.tan(this.fov * Math.PI / 360) / this.camera.aspect) * 360 / Math.PI
+      ? (Math.atan(Math.tan((this.fov * Math.PI) / 360) / this.camera.aspect) *
+          360) /
+        Math.PI
       : this.fov;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight);
@@ -128,10 +156,10 @@ export default class Viewer extends EventDispatcher {
 
   private render(scene: Scene) {
     // 1. Update preprocesses
-    this.dispatchEvent({
-      type: 'updatePreprocesses',
+    this.eventDispatcher.dispatchEvent({
+      type: "updatePreprocesses",
       camera: this.camera,
-      renderer: this.renderer
+      renderer: this.renderer,
     });
 
     // 2. Update screen
@@ -142,11 +170,11 @@ export default class Viewer extends EventDispatcher {
     // 1. Update controls
     this.controls.update();
 
-    this.dispatchEvent({ type: 'updated' });
+    this.eventDispatcher.dispatchEvent({ type: "updated" });
 
     // 3. Update animations
     const delta = this.clock.getDelta();
-    this.scene.dispatchEvent({ type: 'animate', delta });
+    this.scene.getEventDispatcher().dispatchEvent({ type: "animate", delta });
 
     // 4. Render the scene
     this.render(this.scene);
@@ -154,20 +182,20 @@ export default class Viewer extends EventDispatcher {
 
   // Enable looping behaviour but does not actually call the render loop
   private activateRenderLoop() {
-    this.addEventListener('updated', this.updateEvent);
+    this.eventDispatcher.addEventListener("updated", this.updateEvent);
     this.clock.getDelta();
   }
 
   public launch() {
     this.activateRenderLoop();
 
+    window.addEventListener("resize", this.resizeEvent, false);
     // Resize will trigger update
-    window.addEventListener('resize', this.resizeEvent, false);
     this.resize();
   }
 
   public pause() {
-    this.removeEventListener('updated', this.updateEvent);
+    this.eventDispatcher.removeEventListener("updated", this.updateEvent);
     cancelAnimationFrame(this.animationFrameHandle);
   }
 
@@ -180,9 +208,12 @@ export default class Viewer extends EventDispatcher {
     await disolveObject(this, object, options);
   }
 
-  public async disolveObjectByName(name: string, options: DisolveObjectOptions) {
+  public async disolveObjectByName(
+    name: string,
+    options: DisolveObjectOptions
+  ) {
     if (!this.scene) {
-      throw new Error('No active scene in viewer')
+      throw new Error("No active scene in viewer");
     }
     const object = this.scene.getObjectByName(name);
     if (!object) {
@@ -195,9 +226,12 @@ export default class Viewer extends EventDispatcher {
     await resolveObject(this, object, options);
   }
 
-  public async resolveObjectByName(name: string, options: DisolveObjectOptions) {
+  public async resolveObjectByName(
+    name: string,
+    options: DisolveObjectOptions
+  ) {
     if (!this.scene) {
-      throw new Error('No active scene in viewer')
+      throw new Error("No active scene in viewer");
     }
     const object = this.scene.getObjectByName(name);
     if (!object) {
@@ -208,7 +242,7 @@ export default class Viewer extends EventDispatcher {
 
   public dispose() {
     this.pause();
-    window.removeEventListener('resize', this.resizeEvent, false);
+    window.removeEventListener("resize", this.resizeEvent, false);
 
     this.brdfRenderTarget.dispose();
     if (this.ibl) {
@@ -218,22 +252,26 @@ export default class Viewer extends EventDispatcher {
 
     this.scenes.forEach((scene: Scene) => {
       scene.traverse((object: Object3D) => {
-        if (object.type == 'Mesh') {
+        if (object.type == "Mesh") {
           const mesh: Mesh = object as Mesh;
           mesh.geometry.dispose();
         }
-      })
-      scene.userData['materials'].forEach((material: Material) => {
+      });
+      scene.userData["materials"].forEach((material: Material) => {
         material.dispose();
-      })
-      scene.userData['textures'].forEach((texture: Texture) => {
+      });
+      scene.userData["textures"].forEach((texture: Texture) => {
         texture.dispose();
-      })
+      });
     });
 
     this.controls.dispose();
 
     this.element.removeChild(this.renderer.domElement);
     this.renderer.dispose();
+  }
+
+  public getEventDispatcher() {
+    return this.eventDispatcher;
   }
 }
