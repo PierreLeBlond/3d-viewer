@@ -151,7 +151,7 @@ export default class Viewer {
       : this.fov;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight);
-    this.update();
+    this.render(this.scene);
   }
 
   private render(scene: Scene) {
@@ -190,8 +190,8 @@ export default class Viewer {
     this.activateRenderLoop();
 
     window.addEventListener("resize", this.resizeEvent, false);
-    // Resize will trigger update
     this.resize();
+    this.update();
   }
 
   public pause() {
