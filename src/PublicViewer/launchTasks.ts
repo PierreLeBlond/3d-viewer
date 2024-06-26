@@ -1,10 +1,13 @@
 import { EventDispatcher } from "three";
 import type PublicViewer from "./PublicViewer";
 import type { Task, Tasks } from "./Tasks";
-import { ViewerEvent } from "../Viewer/Viewer";
+
+type TaskEvent = {
+  taskCompleted: {};
+};
 
 const getMonitoredTask = (
-  eventDispatcher: EventDispatcher<ViewerEvent>,
+  eventDispatcher: EventDispatcher<TaskEvent>,
   task: Task
 ) => {
   return async () => {
@@ -14,7 +17,7 @@ const getMonitoredTask = (
 };
 
 const getMonitoredTasks = (
-  eventDispatcher: EventDispatcher<ViewerEvent>,
+  eventDispatcher: EventDispatcher<TaskEvent>,
   tasks: Tasks
 ): { monitoredTask: () => Promise<void>; numberOfTasks: number } => {
   if (tasks.task) {
@@ -70,7 +73,7 @@ export default async function launchTasks(
   publicViewer: PublicViewer,
   tasks: Tasks
 ) {
-  const eventDispatcher = new EventDispatcher<ViewerEvent>();
+  const eventDispatcher = new EventDispatcher<TaskEvent>();
   const monitoredTask = getMonitoredTasks(eventDispatcher, tasks);
   let numberOfCompletedTasks = 0;
   eventDispatcher.addEventListener("taskCompleted", () => {

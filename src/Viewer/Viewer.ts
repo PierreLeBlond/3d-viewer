@@ -25,8 +25,8 @@ import {
 import { resolveObject } from "./objects/disolve/resolveObject";
 
 export type ViewerEvent = {
-  taskCompleted: { progression?: number };
-  updated: { progression?: number };
+  taskCompleted: { progression: number };
+  updated: {};
   updatePreprocesses: {
     camera: PerspectiveCamera;
     renderer: WebGLRenderer;
