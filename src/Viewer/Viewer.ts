@@ -44,6 +44,7 @@ export default class Viewer {
   public camera: PerspectiveCamera;
   public controls: OrbitControls;
   public fov: number = 75;
+  public verticalRatio: number = 1;
 
   public context = THREE;
   private clock: Clock;
@@ -143,9 +144,12 @@ export default class Viewer {
     }
     const { clientWidth, clientHeight } = parentElement;
     this.camera.aspect = clientWidth / clientHeight;
-    const isHorizontal = this.camera.aspect <= 1;
+    const isHorizontal = this.camera.aspect <= this.verticalRatio;
     this.camera.fov = isHorizontal
-      ? (Math.atan(Math.tan((this.fov * Math.PI) / 360) / this.camera.aspect) *
+      ? (Math.atan(
+          (Math.tan((this.fov * Math.PI) / 360) * this.verticalRatio) /
+            this.camera.aspect
+        ) *
           360) /
         Math.PI
       : this.fov;
