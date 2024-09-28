@@ -4,7 +4,6 @@ import {
   Material,
   Mesh,
   Object3D,
-  PerspectiveCamera,
   Texture,
   WebGLRenderer,
   WebGLRenderTarget,
@@ -23,13 +22,18 @@ import {
   type DisolveObjectOptions,
 } from "./objects/disolve/disolveObject";
 import { resolveObject } from "./objects/disolve/resolveObject";
+import OffsetCamera from "./camera/OffsetCamera";
 
 export type ViewerEvent = {
   taskCompleted: { progression: number };
   updated: {};
   updatePreprocesses: {
-    camera: PerspectiveCamera;
+    camera: OffsetCamera;
     renderer: WebGLRenderer;
+  };
+  resize: {
+    width: number;
+    height: number;
   };
 };
 
@@ -41,7 +45,7 @@ export default class Viewer {
   public scene: Scene;
   private scenes: Scene[] = [];
 
-  public camera: PerspectiveCamera;
+  public camera: OffsetCamera;
   public controls: OrbitControls;
   public fov: number = 75;
   public verticalRatio: number = 1;
@@ -155,6 +159,12 @@ export default class Viewer {
       : this.fov;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight);
+
+    this.eventDispatcher.dispatchEvent({
+      type: "resize",
+      width: clientWidth,
+      height: clientHeight,
+    });
     this.render(this.scene);
   }
 

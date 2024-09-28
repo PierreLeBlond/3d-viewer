@@ -1,9 +1,14 @@
-import {PerspectiveCamera, WebGLRenderer} from 'three';
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import { WebGLRenderer } from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import OffsetCamera from "./OffsetCamera";
 
 export default function initCamera(renderer: WebGLRenderer) {
-  const camera = new PerspectiveCamera(
-      75, window.innerWidth / window.innerHeight, 0.1, 100);
+  const camera = new OffsetCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+  );
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
@@ -15,5 +20,5 @@ export default function initCamera(renderer: WebGLRenderer) {
   camera.position.set(0, 1, 5);
   controls.update();
 
-  return {camera, controls};
+  return { camera, controls };
 }
