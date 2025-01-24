@@ -265,6 +265,7 @@ export default class Material extends ShaderMaterial {
   }
 
   public vampMeshPhysicalMaterial(material: MeshPhysicalMaterial) {
+    this.name = material.name;
     this.color.copy(material.color);
     this.map = material.map;
     this.normalMap = material.normalMap;
@@ -276,6 +277,8 @@ export default class Material extends ShaderMaterial {
     this.aoMap = material.aoMap;
     this.aoMapIntensity = material.aoMapIntensity;
     this.emissiveMap = material.emissiveMap;
-    this.emissive.copy(material.emissive);
+    this.emissive.copy(
+      material.emissive.multiplyScalar(material.emissiveIntensity)
+    );
   }
 }

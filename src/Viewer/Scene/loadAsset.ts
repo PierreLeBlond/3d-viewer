@@ -1,12 +1,25 @@
-import { LinearSRGBColorSpace, Mesh, MeshPhysicalMaterial, Object3D, Scene, WebGLRenderer } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import createMaterial from '../materials/Material/createMaterial';
+import {
+  LinearSRGBColorSpace,
+  Mesh,
+  MeshPhysicalMaterial,
+  Object3D,
+  Scene,
+  WebGLRenderer,
+} from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import createMaterial from "../materials/Material/createMaterial";
 
 export default async function loadAsset(
-  renderer: WebGLRenderer, scene: Scene, url: string, optionalResourcePath?: string) {
+  renderer: WebGLRenderer,
+  scene: Scene,
+  url: string,
+  optionalResourcePath?: string
+) {
   const gltfLoader = new GLTFLoader();
 
-  const resourcePath = optionalResourcePath || url.match(/(?<base>.+\/)(?:\w|\.)+/)?.groups?.['base'];
+  const resourcePath =
+    optionalResourcePath ||
+    url.match(/(?<base>.+\/)(?:\w|\.)+/)?.groups?.["base"];
 
   if (!resourcePath) {
     throw new Error(`couldn't find asset base url from ${url}`);
@@ -15,12 +28,12 @@ export default async function loadAsset(
   gltfLoader.resourcePath = resourcePath;
 
   const asset = await gltfLoader.loadAsync(url);
-  asset.scene.name = 'main';
+  asset.scene.name = "main";
   scene.add(asset.scene);
 
   // dispatch animations
-  asset.animations.forEach(animation => {
-    const name = animation.name.split('|')[0];
+  asset.animations.forEach((animation) => {
+    const name = animation.name.split("|")[0];
 
     if (!name) {
       throw new Error(`couldn't find animation name from ${animation.name}`);
@@ -67,10 +80,11 @@ export default async function loadAsset(
   const textures = new Set();
 
   scene.traverse((object: Object3D) => {
-    if (object.type == 'Mesh') {
+    if (object.type == "Mesh") {
       const mesh: Mesh = object as Mesh;
       mesh.geometry.dispose();
-      const material: MeshPhysicalMaterial = mesh.material as MeshPhysicalMaterial;
+      const material: MeshPhysicalMaterial =
+        mesh.material as MeshPhysicalMaterial;
       materials.add(material);
 
       textures.add(material.map);
@@ -83,6 +97,6 @@ export default async function loadAsset(
     }
   });
 
-  scene.userData['materials'].add(...materials);
-  scene.userData['textures'].add(...textures);
+  scene.userData["materials"].add(...materials);
+  scene.userData["textures"].add(...textures);
 }
