@@ -40,7 +40,7 @@ vec3 FresnelSchlickRoughness(float cos_theta, vec3 f_0, float roughness) {
 #include <roughnessmap_pars_fragment>
 #include <metalnessmap_pars_fragment>
 
-/*vec3 toneMap(vec3 hdrColor) {
+vec3 toneMap(vec3 hdrColor) {
   // ACES APPROXIMATION from https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
   hdrColor *= 0.6;
   float a = 2.51;
@@ -67,19 +67,19 @@ vec3 untoneMap(vec3 hdrColor) {
   hdrColor /= 0.6;
 
   return hdrColor;
-}*/
+}
 
 vec3 RGBDToHDR(vec4 rgbd) {
   return rgbd.bgr/rgbd.a;
 }
 
-vec3 toneMap(vec3 hdrColor) {
+/*vec3 toneMap(vec3 hdrColor) {
   return hdrColor/(hdrColor + vec3(1.0));
 }
 
 vec3 untoneMap(vec3 ldrColor) {
   return ldrColor/(vec3(1.0) - ldrColor);
-}
+}*/
 
 float UnpackFrom16Bits(vec2 packed_value) {
   const vec2 bit_shift = vec2(1.0 / 255.0, 1.0);
@@ -225,10 +225,15 @@ vec3 ambient = vec3(0.0);
 
 vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
 vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
-vec3 outgoingLight = totalDiffuse + totalSpecular + ambient + totalEmissiveRadiance;
+vec3 outgoingLight = totalDiffuse + totalSpecular + ambient;
 
 #include <opaque_fragment>
 gl_FragColor.xyz = toneMap(gl_FragColor.xyz);
+
+// We assume emissive component is already tonemapped.
+// TODO: Could be better to use a emissive only material, as combining emissive with other pbr component does not make much senses.
+gl_FragColor.xyz += totalEmissiveRadiance
+
 gl_FragColor.xyz = pow(gl_FragColor.xyz, vec3(1.0/2.2));
 #include <premultiplied_alpha_fragment>
 #include <dithering_fragment>
