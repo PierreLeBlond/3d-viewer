@@ -232,7 +232,7 @@ gl_FragColor.xyz = toneMap(gl_FragColor.xyz);
 
 // We assume emissive component is already tonemapped.
 // TODO: Could be better to use a emissive only material, as combining emissive with other pbr component does not make much senses.
-gl_FragColor.xyz += totalEmissiveRadiance
+gl_FragColor.xyz += totalEmissiveRadiance;
 
 gl_FragColor.xyz = pow(gl_FragColor.xyz, vec3(1.0/2.2));
 #include <premultiplied_alpha_fragment>
