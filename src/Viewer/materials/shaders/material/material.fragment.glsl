@@ -40,7 +40,7 @@ vec3 FresnelSchlickRoughness(float cos_theta, vec3 f_0, float roughness) {
 #include <roughnessmap_pars_fragment>
 #include <metalnessmap_pars_fragment>
 
-vec3 toneMap(vec3 hdrColor) {
+/*vec3 toneMap(vec3 hdrColor) {
   // ACES APPROXIMATION from https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
   hdrColor *= 0.6;
   float a = 2.51;
@@ -51,7 +51,7 @@ vec3 toneMap(vec3 hdrColor) {
   hdrColor = clamp((hdrColor*(a*hdrColor+b))/(hdrColor*(c*hdrColor+d)+e), 0.0, 1.0);
 
   return hdrColor;
-}
+}*/
 
 vec3 untoneMap(vec3 hdrColor) {
   // ACES INVERSE APPROXIMATION from https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
@@ -73,11 +73,11 @@ vec3 RGBDToHDR(vec4 rgbd) {
   return rgbd.bgr/rgbd.a;
 }
 
-/*vec3 toneMap(vec3 hdrColor) {
+vec3 toneMap(vec3 hdrColor) {
   return hdrColor/(hdrColor + vec3(1.0));
 }
 
-vec3 untoneMap(vec3 ldrColor) {
+/*vec3 untoneMap(vec3 ldrColor) {
   return ldrColor/(vec3(1.0) - ldrColor);
 }*/
 
@@ -235,6 +235,7 @@ gl_FragColor.xyz = toneMap(gl_FragColor.xyz);
 gl_FragColor.xyz += totalEmissiveRadiance;
 
 gl_FragColor.xyz = pow(gl_FragColor.xyz, vec3(1.0/2.2));
+//gl_FragColor = vec4(radiance, 1.0);
 #include <premultiplied_alpha_fragment>
 #include <dithering_fragment>
 }
