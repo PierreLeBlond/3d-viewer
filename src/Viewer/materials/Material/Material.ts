@@ -41,8 +41,14 @@ interface Uniforms {
   reflectorViewMatrix: { value: Matrix4 };
 }
 
+interface Defines {
+  [define: string]: string | number;
+  OUTPUT_OVERRIDE: string;
+}
+
 export default class Material extends ShaderMaterial {
   public declare uniforms: Uniforms;
+  public declare defines: Defines;
 
   public get color(): Color {
     return this.uniforms["diffuse"].value;
@@ -183,6 +189,13 @@ export default class Material extends ShaderMaterial {
   }
   public set reflectorViewMatrix(reflectorViewMatrix: Matrix4) {
     this.uniforms["reflectorViewMatrix"].value = reflectorViewMatrix;
+  }
+
+  public get outputOverride(): string {
+    return this.defines["OUTPUT_OVERRIDE"];
+  }
+  public set outputOverride(value: string) {
+    this.defines["OUTPUT_OVERRIDE"] = value;
   }
 
   public isMeshPhysicalMaterial: boolean;

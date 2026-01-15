@@ -69,6 +69,7 @@ export default async function loadAsset(
 
       if (material.aoMap != null) {
         material.aoMap.channel = 1;
+        material.aoMap.generateMipmaps = false;
       }
 
       mesh.material = material;

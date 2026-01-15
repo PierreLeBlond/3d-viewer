@@ -218,11 +218,6 @@ vec3 ambient = vec3(0.0);
 
 #endif
 
-#if defined(USE_AOMAP)
-  vec3 occlusion = texture2D(aoMap, vAoMapUv).rgb;
-  ambient *= occlusion;
-#endif
-
 vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
 vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
 vec3 outgoingLight = totalDiffuse + totalSpecular + ambient;
@@ -234,8 +229,17 @@ gl_FragColor.xyz = toneMap(gl_FragColor.xyz);
 // TODO: Could be better to use a emissive only material, as combining emissive with other pbr component does not make much senses.
 gl_FragColor.xyz += totalEmissiveRadiance;
 
+
+#if defined(USE_AOMAP)
+  vec3 occlusion = texture2D(aoMap, vAoMapUv).rgb;
+  gl_FragColor.xyz *= occlusion;
+#endif
+
 gl_FragColor.xyz = pow(gl_FragColor.xyz, vec3(1.0/2.2));
-//gl_FragColor = vec4(radiance, 1.0);
 #include <premultiplied_alpha_fragment>
 #include <dithering_fragment>
+
+#if defined(OUTPUT_OVERRIDE)
+  gl_FragColor.xyz = OUTPUT_OVERRIDE;
+#endif
 }
