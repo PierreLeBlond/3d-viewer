@@ -231,7 +231,7 @@ gl_FragColor.xyz += totalEmissiveRadiance;
 
 
 #if defined(USE_AOMAP)
-  vec3 occlusion = texture2D(aoMap, vAoMapUv).rgb;
+  vec3 occlusion = vec3(texture2D(aoMap, vAoMapUv).r);
   gl_FragColor.xyz *= occlusion;
 #endif
 

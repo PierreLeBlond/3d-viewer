@@ -13,7 +13,7 @@ export default async function loadAsset(
   renderer: WebGLRenderer,
   scene: Scene,
   url: string,
-  optionalResourcePath?: string
+  optionalResourcePath?: string,
 ) {
   const gltfLoader = new GLTFLoader();
 

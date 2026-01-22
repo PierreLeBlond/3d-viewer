@@ -1,8 +1,17 @@
-import { Color, LinearSRGBColorSpace, NoToneMapping, WebGLRenderer } from 'three';
+import {
+  Color,
+  LinearSRGBColorSpace,
+  NoToneMapping,
+  WebGLRenderer,
+} from "three";
 
 export default function initRenderer(element: HTMLElement): WebGLRenderer {
-  const renderer = new WebGLRenderer(
-    { antialias: true, alpha: true, preserveDrawingBuffer: true });
+  const renderer = new WebGLRenderer({
+    antialias: true,
+    alpha: true,
+    preserveDrawingBuffer: true,
+    premultipliedAlpha: false,
+  });
 
   renderer.setSize(element.clientWidth, element.clientHeight);
   renderer.setClearColor(new Color(255, 255, 255), 0);
