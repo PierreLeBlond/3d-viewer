@@ -5,6 +5,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "url": "https://github.com/PierreLeBlond/3d-viewer"
+  },
   "type": "module",
   "engines": {
     "node": ">=14.17.0"
