@@ -10,11 +10,11 @@ export default function initRenderer(element: HTMLElement): WebGLRenderer {
     antialias: true,
     alpha: true,
     preserveDrawingBuffer: true,
-    premultipliedAlpha: false,
+    //premultipliedAlpha: false,
   });
 
   renderer.setSize(element.clientWidth, element.clientHeight);
-  renderer.setClearColor(new Color(255, 255, 255), 0);
+  renderer.setClearColor(new Color(0, 0, 0), 0);
 
   renderer.outputColorSpace = LinearSRGBColorSpace;
   renderer.toneMapping = NoToneMapping;
